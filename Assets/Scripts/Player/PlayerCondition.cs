@@ -26,7 +26,6 @@ public class PlayerCondition : MonoBehaviour, IDamagable
         stamina.Add(stamina.passiveValue * Time.deltaTime);
         thirst.Subtract(thirst.passiveValue * Time.deltaTime);
         hunger.Subtract(hunger.passiveValue * Time.deltaTime);
-        
 
         if (health.curValue < 0f)
         {

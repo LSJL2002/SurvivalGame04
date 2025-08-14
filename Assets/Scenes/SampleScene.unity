@@ -589,7 +589,7 @@ GameObject:
   - component: {fileID: 585403019}
   - component: {fileID: 585403018}
   m_Layer: 5
-  m_Name: Bar
+  m_Name: ThirstBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -634,11 +634,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 7482667652216324306, guid: cdb5dd1b19312a94fad7d84f8cdf3cf5, type: 3}
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -758,7 +758,7 @@ GameObject:
   - component: {fileID: 725965088}
   - component: {fileID: 725965087}
   m_Layer: 5
-  m_Name: Bar
+  m_Name: HungerBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -803,11 +803,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 7482667652216324306, guid: cdb5dd1b19312a94fad7d84f8cdf3cf5, type: 3}
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -959,7 +959,7 @@ GameObject:
   - component: {fileID: 919832750}
   - component: {fileID: 919832749}
   m_Layer: 5
-  m_Name: Bar
+  m_Name: StaminaBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1004,11 +1004,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 7482667652216324306, guid: cdb5dd1b19312a94fad7d84f8cdf3cf5, type: 3}
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -1226,7 +1226,7 @@ GameObject:
   - component: {fileID: 1069481924}
   - component: {fileID: 1069481923}
   m_Layer: 5
-  m_Name: Bar
+  m_Name: HealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1271,11 +1271,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 7482667652216324306, guid: cdb5dd1b19312a94fad7d84f8cdf3cf5, type: 3}
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -1304,7 +1304,6 @@ GameObject:
   - component: {fileID: 1151952755}
   - component: {fileID: 1151952754}
   - component: {fileID: 1151952753}
-  - component: {fileID: 1151952757}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1496,7 +1495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c575245e333de504c951d78fc77e565a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiCondition: {fileID: 0}
+  uiCondition: {fileID: 562269827}
 --- !u!114 &1151952756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1512,19 +1511,6 @@ MonoBehaviour:
   controller: {fileID: 1151952754}
   condition: {fileID: 1151952755}
   dropPosition: {fileID: 1891514138}
---- !u!114 &1151952757
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1151952749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c575245e333de504c951d78fc77e565a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiCondition: {fileID: 0}
 --- !u!136 &1151952758
 CapsuleCollider:
   m_ObjectHideFlags: 0
