@@ -4,8 +4,17 @@ using UnityEngine;
 
 public class Npc : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    public string npcName = "NPC";
+    [TextArea]
+    public string[] dialogues; // 여러 문장 지원
+
+    public virtual void Interact()
+    {
+        DialogueManager.Instance.StartDialogue(npcName, dialogues);
+    }
+
+void Start()
     {
         
     }
