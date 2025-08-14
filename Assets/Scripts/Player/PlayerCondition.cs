@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
 
 
 public interface IDamagable
@@ -14,6 +15,8 @@ public class PlayerCondition : MonoBehaviour, IDamagable
 
     Condition health { get { return uiCondition.health; } }
     Condition stamina { get { return uiCondition.stamina; } }
+    Condition thirst { get { return uiCondition.thirst; } }
+    Condition hunger { get { return uiCondition.hunger; } }
 
     public event Action onTakeDamage;
     private bool isInfiniteStamina = false;
@@ -21,6 +24,9 @@ public class PlayerCondition : MonoBehaviour, IDamagable
     private void Update()
     {
         stamina.Add(stamina.passiveValue * Time.deltaTime);
+        thirst.Subtract(thirst.passiveValue * Time.deltaTime);
+        hunger.Subtract(hunger.passiveValue * Time.deltaTime);
+        
 
         if (health.curValue < 0f)
         {
