@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: TestBlock
   description: Testing
-  type: 0
+  type: 2
   icon: {fileID: 7482667652216324306, guid: f8b495343ac31714c87e24bebd4ed295, type: 3}
   dropPrefab: {fileID: 2534515386240132120, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
   attackDamage: 0

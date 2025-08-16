@@ -30,17 +30,17 @@ public class ItemSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         parentCanvas = GetComponentInParent<Canvas>();
     }
 
-    private void OnEnable()
-    {
-        outline.enabled = equipped;
-    }
-
     public void Set()
     {
+        if (item == null)
+        {
+            Clear();
+            return;
+        }
+
         icon.gameObject.SetActive(true);
         icon.sprite = item.icon;
         quantityText.text = quantity > 1 ? quantity.ToString() : "";
-        outline.enabled = equipped;
     }
 
     public void Clear()
@@ -53,14 +53,14 @@ public class ItemSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
+        if (item == null)
         {
-            inventory.UseItem(index, IsHotbarSlot());
+            // Clear selection in inventory UI
+            inventory.ClearSelectedItem();
+            return;
         }
-        else
-        {
-            inventory.SelectItem(index, IsHotbarSlot());
-        }
+        inventory.SelectItem(index, IsHotbarSlot());
+
     }
 
     private bool IsHotbarSlot()

@@ -21,7 +21,9 @@ public class UIInventory : MonoBehaviour
     private ItemSlot[] inventorySlots;
     private ItemSlot[] hotbarSlots;
     private ItemSlot selectedItem;
+    public HotbarData hotbarData = new HotbarData();
     private int selectedItemIndex;
+    [SerializeField] private UIHotbar hotbarUI;
 
     private PlayerController controller;
     private PlayerCondition condition;
@@ -60,6 +62,11 @@ public class UIInventory : MonoBehaviour
         ClearSelectedItemWindow();
     }
 
+
+    void UpdateHotbarDisplay()
+    {
+        hotbarUI.UpdateHotbarUI(hotbarSlots);
+    }
     private void ClearSelectedItemWindow()
     {
         selectedItem = null;
@@ -178,18 +185,26 @@ public class UIInventory : MonoBehaviour
 
         Debug.Log($"Using {slot.item.displayName}");
 
-        if (slot.item.type == ItemType.Consumable)
-        {
-            foreach (var c in slot.item.consumables)
+            if (slot.item.type == ItemType.Consumable)
             {
-                Debug.Log("Testing");
-            }
+                // Apply effects here
+                foreach (var c in slot.item.consumables)
+                {
+                    // Example: CharacterManager.Instance.Player.condition.Apply(c);
+                }
 
-            slot.quantity--;
-            if (slot.quantity <= 0) slot.Clear();
-            UpdateUI();
+                slot.quantity--;
+                if (slot.quantity <= 0)
+                {
+                    // Remove the item completely
+                    targetArray[index].Clear();
+                }
+
+                UpdateUI();      // Refresh visuals
+                UpdateHotbarDisplay(); // Refresh hotbar UI
         }
     }
+
 
     public void HighlightHotbarSlot(int index)
     {
@@ -216,8 +231,42 @@ public class UIInventory : MonoBehaviour
             (fromSlot.quantity, toSlot.quantity) = (toSlot.quantity, fromSlot.quantity);
             (fromSlot.equipped, toSlot.equipped) = (toSlot.equipped, fromSlot.equipped);
         }
-
+        UpdateHotbarDisplay();
         UpdateUI();
+        UpdateHotbarData(toSlot.index);
+        UpdateHotbarData(fromSlot.index);
+    }
+    public void ClearSelectedItem()
+    {
+        // Clear any UI that shows selected item info
+        // For example:
+        selectedItemName.text = "";
+        selectedItemDescription.text = "";
+    }
+    public void UpdateHotbarData(int index)
+    {
+        if (index < 0 || index >= hotbarSlots.Length) return;
+
+        ItemSlot slot = hotbarSlots[index];
+
+        // Ensure the list is big enough
+        while (hotbarData.slots.Count <= index)
+            hotbarData.slots.Add(new ItemSlotData());
+
+        hotbarData.slots[index] = slot.item != null ? new ItemSlotData
+        {
+            item = slot.item,
+            quantity = slot.quantity,
+            equipped = slot.equipped
+        } : new ItemSlotData(); // clear if empty
+    }
+
+
+    // Updates the entire hotbarData
+    public void RefreshHotbarData()
+    {
+        for (int i = 0; i < hotbarSlots.Length; i++)
+            UpdateHotbarData(i);
     }
 
     // Public access to both slot arrays
