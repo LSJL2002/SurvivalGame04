@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,12 +23,12 @@ public class PlayerController : MonoBehaviour
     public float lookSensitivity;
 
     [Header("Camera Views")]
-    public Transform thirdPersonCamPos;
-    private Vector3 firstPersonLoc;
-    private Quaternion firstPersonAng;
-    public bool isThirdPerson = false;
-    public GameObject model;
-    public GameObject equipCamera;
+    // public Transform thirdPersonCamPos;
+    // private Vector3 firstPersonLoc;
+    // private Quaternion firstPersonAng;
+    // public bool isThirdPerson = false;
+    // public GameObject model;
+    // public GameObject equipCamera;
     public Action inventory;
     [Header("Climbing Walls")]
     public LayerMask wallLayerMask;
@@ -50,18 +51,16 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        model.SetActive(false);
     }
 
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked; //Wether to lock the mouse or not (Make it invisible)
-        firstPersonLoc = cameraContainer.localPosition;
-        firstPersonAng = cameraContainer.localRotation;
     }
 
     private void FixedUpdate()
     {
+        DrawGroundRays();
         if (isSprinting)
         {
             bool hasStamina = CharacterManager.Instance.Player.condition.UseStamina(sprintStamina * Time.deltaTime);
@@ -141,6 +140,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (IsGrounded())
             {
+                Debug.Log("Jump");
                 float finalJumpPower = jumpPower;
                 if (isOnTrampoline)
                 {
@@ -151,6 +151,16 @@ public class PlayerController : MonoBehaviour
             else if (isTouchingWall)
             {
                 StartClimbing();
+            }
+        }
+    }
+    public void OnAttackInput(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Started)
+        {
+            if (CharacterManager.Instance.Player.equip.curEquip != null)
+            {
+                CharacterManager.Instance.Player.equip.curEquip.OnAttackInput();
             }
         }
     }
@@ -192,6 +202,7 @@ public class PlayerController : MonoBehaviour
         {
             if (Physics.Raycast(rays[i], 0.3f, groundLayerMask))
             {
+                Debug.Log("Isgrounded");
                 return true;
             }
         }
@@ -283,25 +294,25 @@ public class PlayerController : MonoBehaviour
         rb.position += wallStick * Time.fixedDeltaTime;
     }
 
-    //Visual Learning drawing the 4 rays inorder to see where they actually are. 
-    // void DrawGroundRays()
-    // {
-    //     Vector3 origin = transform.position + (transform.up * 0.01f);
-    //     float offset = 0.2f;
-    //     float rayLength = 0.3f;
+    // Visual Learning drawing the 4 rays inorder to see where they actually are. 
+    void DrawGroundRays()
+    {
+        Vector3 origin = transform.position + (transform.up * 0.01f);
+        float offset = 0.2f;
+        float rayLength = 0.3f;
 
-    //     // Define four ray origins
-    //     Vector3[] rayOrigins = new Vector3[]
-    //     {
-    //         origin + (transform.forward * offset),   // Front
-    //         origin + (-transform.forward * offset),  // Back
-    //         origin + (transform.right * offset),     // Right
-    //         origin + (-transform.right * offset)     // Left
-    //     };
+        // Define four ray origins
+        Vector3[] rayOrigins = new Vector3[]
+        {
+            origin + (transform.forward * offset),   // Front
+            origin + (-transform.forward * offset),  // Back
+            origin + (transform.right * offset),     // Right
+            origin + (-transform.right * offset)     // Left
+        };
 
-    //     foreach (Vector3 start in rayOrigins)
-    //     {
-    //         Debug.DrawRay(start, Vector3.down * rayLength, Color.red);
-    //     }
-    // }
+        foreach (Vector3 start in rayOrigins)
+        {
+            Debug.DrawRay(start, Vector3.down * rayLength, Color.red);
+        }
+    }
 }
