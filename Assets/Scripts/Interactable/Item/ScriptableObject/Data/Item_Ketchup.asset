@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
+  m_Name: Item_Ketchup
+  m_EditorClassIdentifier: 
+  displayName: "\uCF00\uCCA9"
+  description: "\uCF00\uCCA9"
+  type: 0
+  icon: {fileID: 21300000, guid: d517b9d01842ab04ab24fce41649218a, type: 3}
+  dropPrefab: {fileID: 3934624933333585743, guid: 7ddeb1beb5a00144c9cc82df120bb902, type: 3}
+  attackDamage: 0
+  canStack: 1
+  maxStackAmount: 10
+  consumables: []
+  equipPrefab: {fileID: 0}
+  boostDuration: 0
