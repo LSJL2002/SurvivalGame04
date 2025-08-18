@@ -97,6 +97,7 @@ public class ItemSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         draggedIcon.rectTransform.localPosition = localPoint;
 
         RectTransform invRect = inventory.inventoryWindow.transform as RectTransform;
+        //Check to see if the dragged location is outside of the inventory.
         droppedOutside = !RectTransformUtility.RectangleContainsScreenPoint(invRect, eventData.position, eventData.pressEventCamera);
     }
 
@@ -107,9 +108,11 @@ public class ItemSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
         if (droppedOutside && item != null)
         {
-            inventory.ThrowItem(item);
+            inventory.ThrowItem(item, quantity); // pass quantity
             Clear();
             inventory.UpdateUI();
+            inventory.UpdateHotbarDisplay();
+            inventory.UpdateHotbarData(index);
         }
     }
 

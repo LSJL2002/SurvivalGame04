@@ -63,7 +63,7 @@ public class UIInventory : MonoBehaviour
     }
 
 
-    void UpdateHotbarDisplay()
+    public void UpdateHotbarDisplay()
     {
         hotbarUI.UpdateHotbarUI(hotbarSlots);
     }
@@ -88,7 +88,37 @@ public class UIInventory : MonoBehaviour
         ItemData data = CharacterManager.Instance.Player.itemData;
         if (data == null) return;
 
-        // Try stack first in inventory
+        // 1. Try stack first in hotbar
+        if (data.canStack)
+        {
+            foreach (var slot in hotbarSlots)
+            {
+                if (slot.item == data && slot.quantity < data.maxStackAmount)
+                {
+                    slot.quantity++;
+                    UpdateUI();
+                    UpdateHotbarDisplay();
+                    CharacterManager.Instance.Player.itemData = null;
+                    return;
+                }
+            }
+        }
+
+        // 2. Try empty slot in hotbar
+        foreach (var slot in hotbarSlots)
+        {
+            if (slot.item == null)
+            {
+                slot.item = data;
+                slot.quantity = 1;
+                UpdateUI();
+                UpdateHotbarDisplay();
+                CharacterManager.Instance.Player.itemData = null;
+                return;
+            }
+        }
+
+        // 3. Try stack in inventory
         if (data.canStack)
         {
             ItemSlot stackSlot = GetStackSlot(data);
@@ -96,26 +126,29 @@ public class UIInventory : MonoBehaviour
             {
                 stackSlot.quantity++;
                 UpdateUI();
+                UpdateHotbarDisplay();
                 CharacterManager.Instance.Player.itemData = null;
                 return;
             }
         }
 
-        // Try empty slot
+        // 4. Try empty slot in inventory
         ItemSlot emptySlot = GetEmptySlot();
         if (emptySlot != null)
         {
             emptySlot.item = data;
             emptySlot.quantity = 1;
             UpdateUI();
+            UpdateHotbarDisplay();
             CharacterManager.Instance.Player.itemData = null;
             return;
         }
 
-        // Inventory full, drop item
-        ThrowItem(data);
+        // 5. Inventory full, drop item
+        ThrowItem(data, 1);
         CharacterManager.Instance.Player.itemData = null;
     }
+
 
     public void UpdateUI()
     {
@@ -151,9 +184,16 @@ public class UIInventory : MonoBehaviour
         return null;
     }
 
-    public void ThrowItem(ItemData data)
+    public void ThrowItem(ItemData data, int amount)
     {
-        Instantiate(data.dropPrefab, dropPosition.position, Quaternion.Euler(Vector3.one * Random.value * 360));
+        for (int i = 0; i < amount; i++)
+        {
+            // Optional: add random offset so items don't stack perfectly
+            Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+            Instantiate(data.dropPrefab, dropPosition.position + offset, Quaternion.identity);
+        }
+        UpdateUI();      // Refresh visuals
+        UpdateHotbarDisplay(); // Refresh hotbar UI
     }
 
     public void SelectItem(int index, bool isHotbar = false)

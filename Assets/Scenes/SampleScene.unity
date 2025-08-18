@@ -746,6 +746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hotbarSlotPanel: {fileID: 286640504}
+  inventoryUI: {fileID: 1948926246}
 --- !u!1001 &306644699
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4935,6 +4936,63 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3744725016486838952, guid: eee4efa9d8988ff458b32d82ff7496ec, type: 3}
   m_PrefabInstance: {fileID: 1691782254}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1727786813
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2534515386240132120, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_Name
+      value: Box (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.72
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.13861465
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8667487813956257708, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 96b13d3ab2c9edc4fbec4aa917f742b6, type: 3}
 --- !u!1 &1818670041
 GameObject:
   m_ObjectHideFlags: 0
@@ -5302,6 +5360,9 @@ MonoBehaviour:
   selectedStatName: {fileID: 536004244}
   selectedStatValue: {fileID: 1488649995}
   hotbarSize: 8
+  hotbarData:
+    slots: []
+    activeIndex: 0
   hotbarUI: {fileID: 286640506}
 --- !u!1 &1987190210
 GameObject:
@@ -6237,3 +6298,4 @@ SceneRoots:
   - {fileID: 992599189}
   - {fileID: 743891661}
   - {fileID: 7968434053423555854}
+  - {fileID: 1727786813}
