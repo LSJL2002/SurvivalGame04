@@ -186,13 +186,19 @@ public class UIInventory : MonoBehaviour
 
     public void ThrowItem(ItemData data, int amount)
     {
+        Transform playerTransform = CharacterManager.Instance.Player.transform;
+
         for (int i = 0; i < amount; i++)
         {
-            // Optional: add random offset so items don't stack perfectly
-            Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
-            Instantiate(data.dropPrefab, dropPosition.position + offset, Quaternion.identity);
+            // Forward direction + slight random spread
+            Vector3 forwardOffset = playerTransform.forward * 1.5f; // throw distance
+            Vector3 randomOffset = new Vector3(Random.Range(-0.3f, 0.3f), 0, Random.Range(-0.3f, 0.3f));
+            Vector3 spawnPosition = dropPosition.position + forwardOffset + randomOffset;
+
+            Instantiate(data.dropPrefab, spawnPosition, Quaternion.identity);
         }
-        UpdateUI();      // Refresh visuals
+
+        UpdateUI();           // Refresh visuals
         UpdateHotbarDisplay(); // Refresh hotbar UI
     }
 

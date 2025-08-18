@@ -15,6 +15,10 @@ public class UIHotbar : MonoBehaviour
         {
             hotbarSlots[i] = hotbarSlotPanel.GetChild(i).GetComponent<ItemSlot>();
             hotbarSlots[i].Clear();
+
+            // Turn off outline initially
+            if (hotbarSlots[i].outline != null)
+                hotbarSlots[i].outline.enabled = false;
         }
     }
 
@@ -56,9 +60,9 @@ public class UIHotbar : MonoBehaviour
         if (index < 0 || index >= hotbarSlots.Length) return;
         selectedIndex = index;
 
-        // Highlight selected slot
+        // Highlight only the selected slot, regardless of whether it has an item
         for (int i = 0; i < hotbarSlots.Length; i++)
-            hotbarSlots[i].outline.enabled = (i == selectedIndex && hotbarSlots[i].item != null);
+            hotbarSlots[i].outline.enabled = (i == selectedIndex);
     }
 
     private void UseSelectedItem()
