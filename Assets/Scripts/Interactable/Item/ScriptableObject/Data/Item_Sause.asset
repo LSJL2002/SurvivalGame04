@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
   m_Name: Item_Sause
   m_EditorClassIdentifier: 
-  displayName: 
-  description: 
+  displayName: "\uC18C\uC2A4"
+  description: "\uC18C\uC2A4"
   type: 0
   icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
+  dropPrefab: {fileID: 9050825541863731776, guid: 813661fac668b1641a0593c79112d7ec, type: 3}
   attackDamage: 0
-  canStack: 0
-  maxStackAmount: 0
+  canStack: 1
+  maxStackAmount: 10
   consumables: []
   equipPrefab: {fileID: 0}
   boostDuration: 0

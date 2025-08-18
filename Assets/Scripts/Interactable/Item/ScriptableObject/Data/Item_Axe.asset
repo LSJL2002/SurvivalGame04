@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\uB3C4\uB07C"
   description: "\uB3C4\uB07C"
-  type: 0
+  type: 1
   icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
-  attackDamage: 0
+  dropPrefab: {fileID: 7940421289650332498, guid: 50c8a6c33a2a9ae40933007784e66a9c, type: 3}
+  attackDamage: 20
   canStack: 0
   maxStackAmount: 0
   consumables: []

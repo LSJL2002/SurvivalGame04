@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
   m_Name: Item_Baseballbat
   m_EditorClassIdentifier: 
-  displayName: 
-  description: 
-  type: 0
+  displayName: "\uC57C\uAD6C\uBC29\uB9DD\uC774"
+  description: "\uC57C\uAD6C\uBC29\uB9DD\uC774"
+  type: 1
   icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
-  attackDamage: 0
+  dropPrefab: {fileID: 5753201263955256138, guid: abd86e97c812e0a4fab2f51fed0306e6, type: 3}
+  attackDamage: 10
   canStack: 0
   maxStackAmount: 0
   consumables: []

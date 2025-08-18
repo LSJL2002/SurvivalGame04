@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: Item_Samdwichfull
   m_EditorClassIdentifier: 
   displayName: "\uC0CC\uB4DC\uC704\uCE58"
-  description: 
-  type: 0
+  description: "\uC0CC\uB4DC\uC704\uCE58"
+  type: 2
   icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
+  dropPrefab: {fileID: 1622710466890053648, guid: b4abc4f99d490d648a4a40d1eb35ccdd, type: 3}
   attackDamage: 0
-  canStack: 0
-  maxStackAmount: 0
-  consumables: []
+  canStack: 1
+  maxStackAmount: 10
+  consumables:
+  - type: 1
+    boostType: 0
+    value: 100
   equipPrefab: {fileID: 0}
   boostDuration: 0

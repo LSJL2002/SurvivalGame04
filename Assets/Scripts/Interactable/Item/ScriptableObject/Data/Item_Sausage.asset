@@ -12,14 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
   m_Name: Item_Sausage
   m_EditorClassIdentifier: 
-  displayName: 
-  description: 
-  type: 0
+  displayName: "\uC18C\uC138\uC9C0"
+  description: "\uC18C\uC138\uC9C0"
+  type: 2
   icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
+  dropPrefab: {fileID: 4841729250471063175, guid: 5b09f34fe60b56643a3748749ff7e161, type: 3}
   attackDamage: 0
   canStack: 0
   maxStackAmount: 0
-  consumables: []
+  consumables:
+  - type: 1
+    boostType: 0
+    value: 30
   equipPrefab: {fileID: 0}
   boostDuration: 0
