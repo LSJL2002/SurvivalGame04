@@ -27,6 +27,7 @@ public class Equipment : MonoBehaviour
     {
         if(curEquip != null)
         {
+            Debug.Log("Destroy");
             Destroy(curEquip.gameObject);
             curEquip = null;
         }

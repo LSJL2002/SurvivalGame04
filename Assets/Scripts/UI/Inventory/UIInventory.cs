@@ -232,24 +232,25 @@ public class UIInventory : MonoBehaviour
 
         ItemData data = slot.item;
 
-        Debug.Log($"Using {slot.item.displayName}");
+        Debug.Log($"Using {data.displayName}");
 
-        switch (data.type)
+        if (data.type == ItemType.Consumable)
         {
-            case ItemType.Consumable:
-                foreach (var c in slot.item.consumables)
-                {
-                    Debug.Log("Testing 123");
-                }
-                break;
+            foreach (var c in data.consumables)
+            {
+                // Apply effect
+                //CharacterManager.Instance.Player.condition.ApplyConsumable(c);
+            }
 
-            case ItemType.Equipable:
-                CharacterManager.Instance.Player.equip.EquipNew(data);
-                break;
+            // Reduce stack
+            slot.quantity--;
+            if (slot.quantity <= 0) slot.Clear();
+
+            UpdateUI();
+            UpdateHotbarDisplay();
         }
-        UpdateUI();      // Refresh visuals
-        UpdateHotbarDisplay(); // Refresh hotbar UI
     }
+
 
 
     public void HighlightHotbarSlot(int index)

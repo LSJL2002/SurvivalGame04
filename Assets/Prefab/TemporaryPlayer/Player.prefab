@@ -58,11 +58,11 @@ Transform:
   m_GameObject: {fileID: 652353615141897107}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.38, y: 0.99, z: -0.52}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 717259701240472960}
+  m_Father: {fileID: 2047318764000376374}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1080317029159412231
 GameObject:
@@ -229,7 +229,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2047318764000376374}
   - component: {fileID: 4602463254811206596}
-  - component: {fileID: 5925126383536279866}
   m_Layer: 0
   m_Name: EquipCamera
   m_TagString: MainCamera
@@ -249,7 +248,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2859982813694922996}
   m_Father: {fileID: 2493990259192755929}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &4602463254811206596
@@ -303,14 +303,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &5925126383536279866
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4980306162248096303}
-  m_Enabled: 1
 --- !u!1 &5653088591003292159
 GameObject:
   m_ObjectHideFlags: 0
@@ -327,6 +319,7 @@ GameObject:
   - component: {fileID: 8805281195478866178}
   - component: {fileID: 1518400402688337853}
   - component: {fileID: 8860014093819050101}
+  - component: {fileID: 35973042351019830}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -350,7 +343,6 @@ Transform:
   - {fileID: 2110500543304599683}
   - {fileID: 2493990259192755929}
   - {fileID: 9107426789424486267}
-  - {fileID: 2859982813694922996}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4068735827091024949
@@ -572,7 +564,19 @@ MonoBehaviour:
     m_ActionId: e0a28aaf-0213-43a9-afd8-e1ddc9a2fc75
     m_ActionName: Player/Interact[/Keyboard/e]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8805281195478866178}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnAttackInput
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: d822cf69-98f2-4a87-a144-3f2b60208876
     m_ActionName: Player/Attack[/Mouse/leftButton]
   - m_PersistentCalls:
@@ -612,9 +616,23 @@ MonoBehaviour:
   maxCheckDistance: 10
   layerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   curInteractGameObject: {fileID: 0}
   promptText: {fileID: 0}
+--- !u!114 &35973042351019830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5653088591003292159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9996eba4e9baa4daf23533bb5c33ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curEquip: {fileID: 0}
+  equipParent: {fileID: 2859982813694922996}
 --- !u!1 &8904492514882661494
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,9 +31,10 @@ public class EquipTool : Equip
         {
             if (CharacterManager.Instance.Player.condition.UseStamina(UseStamina))
             {
+                Debug.Log("Attack)");
                 attacking = true;
-                animator.SetTrigger("Attack");
-                Invoke("OnCanAttack", attackRate);
+                //animator.SetTrigger("Attack");
+                //Invoke("OnCanAttack", attackRate);
             }
         }
     }
