@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 8503650798623938843}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0003662256, y: 0.0021146345, z: -0.0072743474}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -108,10 +108,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Burger
       objectReference: {fileID: 0}
-    - target: {fileID: 2018395182626883542, guid: ea97e632cc837094793c0c67132066b9, type: 3}
-      propertyPath: m_Layer
-      value: 22
-      objectReference: {fileID: 0}
     - target: {fileID: 3051644363768804805, guid: ea97e632cc837094793c0c67132066b9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -153,8 +149,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 7413997160773471604, guid: ea97e632cc837094793c0c67132066b9, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ea97e632cc837094793c0c67132066b9, type: 3}

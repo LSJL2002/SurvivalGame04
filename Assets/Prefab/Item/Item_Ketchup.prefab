@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4138836331466190305}
   - component: {fileID: 6266062570296345526}
   - component: {fileID: 6045681164917376900}
-  m_Layer: 22
+  m_Layer: 8
   m_Name: Item_Ketchup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.04207337, y: 0.122008935, z: 0.04218352}
-  m_Center: {x: 0.4982332, y: -0.16700372, z: 0.16797212}
+  m_Size: {x: 0.04207337, y: 0.12447763, z: 0.04218352}
+  m_Center: {x: 0.4982332, y: -0.16741517, z: 0.16797212}
 --- !u!114 &6045681164917376900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,10 +107,6 @@ PrefabInstance:
     - target: {fileID: 5004982248438291890, guid: ea443e2990042e44aae001028c949d0d, type: 3}
       propertyPath: m_Name
       value: Ketchup
-      objectReference: {fileID: 0}
-    - target: {fileID: 5004982248438291890, guid: ea443e2990042e44aae001028c949d0d, type: 3}
-      propertyPath: m_Layer
-      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 8299603111653814177, guid: ea443e2990042e44aae001028c949d0d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -152,8 +148,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8051974512203825082, guid: ea443e2990042e44aae001028c949d0d, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

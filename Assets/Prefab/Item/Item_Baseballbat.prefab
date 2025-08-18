@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3746232736848856085}
   - component: {fileID: 7198400429676779535}
   - component: {fileID: 618448019385656921}
-  m_Layer: 22
+  m_Layer: 8
   m_Name: Item_Baseballbat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 5753201263955256138}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0003662256, y: 0.0021146345, z: -0.0072743474}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -150,11 +150,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8751884222236341439, guid: f45d28f501bec3740b6752ebee85d4bf, type: 3}
       propertyPath: m_Layer
-      value: 22
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 6069357011581471288, guid: f45d28f501bec3740b6752ebee85d4bf, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f45d28f501bec3740b6752ebee85d4bf, type: 3}
