@@ -10,15 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
-  m_Name: TestItem
+  m_Name: Item_Icecream
   m_EditorClassIdentifier: 
-  displayName: Hotdog
-  description: 
-  type: 0
-  Icon: {fileID: 0}
-  dropPrefeb: {fileID: 0}
-  canStack: 0
-  maxStackAmount: 0
+  displayName: "\uC544\uC774\uC2A4\uD06C\uB9BC"
+  description: "\uC544\uC774\uC2A4\uD06C\uB9BC"
+  type: 2
+  icon: {fileID: 0}
+  dropPrefab: {fileID: 6569623577467226911, guid: d443fba563513ec4491c275251d7da6a, type: 3}
+  attackDamage: 0
+  canStack: 1
+  maxStackAmount: 10
   consumables:
-    type: 0
-    value: 0
+  - type: 2
+    boostType: 1
+    value: 5
+  equipPrefab: {fileID: 0}
+  boostDuration: 0
