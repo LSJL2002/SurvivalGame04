@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -7,9 +7,9 @@ public class Enemy : MonoBehaviour
     public enum State { Idle, Patrol, Chase, Attack, Dead }
 
     [Header("Target")]
-    public string targetTag = "Player";     // ÂÑÀ» ÅÂ±×
-    public LayerMask targetMask;            // °ø°İ ÆÇÁ¤ ´ë»ó ·¹ÀÌ¾î
-    public Transform target;                // ºñ¿öµÎ¸é ÅÂ±×·Î ÀÚµ¿Å½»ö
+    public string targetTag = "Player";     // ì«“ì„ íƒœê·¸
+    public LayerMask targetMask;            // ê³µê²© íŒì • ëŒ€ìƒ ë ˆì´ì–´
+    public Transform target;                // ë¹„ì›Œë‘ë©´ íƒœê·¸ë¡œ ìë™íƒìƒ‰
 
     [Header("Enemy Type (1~5)")]
     [Range(1, 5)] public int enemyType = 1;
@@ -21,11 +21,11 @@ public class Enemy : MonoBehaviour
 
     [Header("Attack")]
     [SerializeField] int attackDamage = 10;
-    [SerializeField] float attackRange = 2.0f;       // ÆÇÁ¤ ¹İ°æ
-    [SerializeField] float attackCooldown = 1.2f;    // °ø°İ ÄğÅ¸ÀÓ
-    [SerializeField] float attackDelay = 0.3f;       // ¾Ö´Ï¸ŞÀÌ¼Ç Å¸ÀÌ¹Ö(ÀÌº¥Æ® ¾øÀ» ¶§ »ç¿ë)
-    [SerializeField] bool useAnimationEvent = true;  // ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌº¥Æ®·Î Å¸°İÇÒÁö
-    [SerializeField] Transform attackPoint;          // ºñ¿öµÎ¸é Àü¹æ 1m
+    [SerializeField] float attackRange = 2.0f;       // íŒì • ë°˜ê²½
+    [SerializeField] float attackCooldown = 1.2f;    // ê³µê²© ì¿¨íƒ€ì„
+    [SerializeField] float attackDelay = 0.15f;      // ì• ë‹ˆ ì—†ì´ ì‚¬ìš©í•  íƒ€ê²© ë”œë ˆì´
+    [SerializeField] bool useAnimationEvent = false; // âœ… ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ ì—†ì´ë„ ë™ì‘
+    [SerializeField] Transform attackPoint;          // ë¹„ì›Œë‘ë©´ ì „ë°© 1m
 
     [Header("Animator Params")]
     public string speedFloat = "Speed";
@@ -65,6 +65,7 @@ public class Enemy : MonoBehaviour
         if (state == State.Dead) return;
         if (atkTimer > 0f) atkTimer -= Time.deltaTime;
 
+        // ì´ë™ ì†ë„ë¥¼ ì• ë‹ˆë©”ì´í„°ì— ì „ë‹¬ (Idle/Run ì „í™˜ìš©)
         if (anim)
         {
             float planar = new Vector3(rb.velocity.x, 0, rb.velocity.z).magnitude;
@@ -84,16 +85,20 @@ public class Enemy : MonoBehaviour
                 break;
 
             case State.Attack:
-                rb.velocity = Vector3.zero; // °ø°İ Áß ÀÌµ¿ Á¤Áö
+                rb.velocity = Vector3.zero; // ê³µê²© ì¤‘ ì´ë™ ì •ì§€
                 break;
         }
 
-        // Å¸°Ù ¹Ù¶óº¸±â(¼öÆò)
+        // íƒ€ê²Ÿ ë°”ë¼ë³´ê¸°(ìˆ˜í‰)
         if (target)
         {
             var look = target.position - transform.position; look.y = 0;
             if (look.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 10f);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    Quaternion.LookRotation(look),
+                    Time.deltaTime * 10f
+                );
         }
     }
 
@@ -112,7 +117,8 @@ public class Enemy : MonoBehaviour
     {
         Vector3 goal = (patrolDir > 0) ? patrolRight : spawnPos;
         MoveTowards(goal, patrolSpeed);
-        if (Vector3.Distance(transform.position, goal) < 0.3f) patrolDir *= -1;
+        if (Vector3.Distance(transform.position, goal) < 0.3f)
+            patrolDir *= -1;
     }
 
     void Chase()
@@ -122,6 +128,7 @@ public class Enemy : MonoBehaviour
         float dist = Vector3.Distance(transform.position, target.position);
         if (dist > visionRange * 1.2f) { state = State.Patrol; return; }
 
+        // ì‚¬ê±°ë¦¬ + ì¿¨íƒ€ì„ ì¶©ì¡± ì‹œ ê³µê²© ì‹œì‘
         if (dist <= attackRange && atkTimer <= 0f)
         {
             StartAttack();
@@ -135,10 +142,10 @@ public class Enemy : MonoBehaviour
     {
         Vector3 dir = (goal - transform.position).normalized;
         dir.y = 0;
-        rb.velocity = dir * speed + Vector3.up * rb.velocity.y; // Áß·Â À¯Áö
+        rb.velocity = dir * speed + Vector3.up * rb.velocity.y; // ì¤‘ë ¥ ìœ ì§€
     }
 
-    // ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡ Attack core ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Attack core â”€â”€â”€â”€â”€â”€â”€â”€â”€
     void StartAttack()
     {
         state = State.Attack;
@@ -147,9 +154,10 @@ public class Enemy : MonoBehaviour
 
         if (anim) anim.SetTrigger(attackTrigger);
 
+        // ì´ë²¤íŠ¸ë¥¼ ì“°ì§€ ì•ŠëŠ” ê°„ë‹¨ ëª¨ë“œ: ë”œë ˆì´ í›„ ë²”ìœ„ íŒì •
         if (!useAnimationEvent)
             StartCoroutine(AttackHitAfter(attackDelay));
-        // useAnimationEvent=true¸é, ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌº¥Æ®¿¡¼­ AnimationAttackHit() È£Ãâ
+        // useAnimationEvent == trueë©´, ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ì—ì„œ AnimationAttackHit() í˜¸ì¶œ
     }
 
     IEnumerator AttackHitAfter(float delay)
@@ -159,8 +167,8 @@ public class Enemy : MonoBehaviour
         if (state != State.Dead) state = State.Chase;
     }
 
-    // ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌº¥Æ®¿ë (Clip Å¸ÀÓ¶óÀÎ¿¡¼­ È£Ãâ)
-    // Animation Event ÀÌ¸§: AnimationAttackHit
+    // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ìš© (Clip íƒ€ì„ë¼ì¸ì—ì„œ í˜¸ì¶œ)
+    // Animation Event ì´ë¦„: AnimationAttackHit
     public void AnimationAttackHit()
     {
         if (state == State.Dead) return;
@@ -169,9 +177,12 @@ public class Enemy : MonoBehaviour
 
     void DoMeleeHit()
     {
-        Vector3 center =
-            attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
+        // íŒì • ì¤‘ì‹¬: attackPoint ì§€ì • ì‹œ ê·¸ ìœ„ì¹˜, ì—†ìœ¼ë©´ ì „ë°© 1m
+        Vector3 center = attackPoint
+            ? attackPoint.position
+            : (transform.position + transform.forward * 1.0f);
 
+        // ë°˜ê²½ ë‚´ ëŒ€ìƒ ë ˆì´ì–´ë§Œ íƒìƒ‰
         Collider[] hits = Physics.OverlapSphere(center, attackRange, targetMask);
         foreach (var h in hits)
         {
@@ -182,9 +193,9 @@ public class Enemy : MonoBehaviour
             }
         }
     }
-    // ¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡¦¡
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    // EnemyHealth¿¡¼­ »ç¸Á ½Ã È£Ãâ
+    // EnemyHealthì—ì„œ ì‚¬ë§ ì‹œ í˜¸ì¶œ
     public void SetDeadState()
     {
         state = State.Dead;
@@ -204,10 +215,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    int GetAttackDamageByType()
-    {
-        return attackDamage; // À§ ApplyEnemyType¿¡¼­ ¼¼ÆÃµÊ
-    }
+    int GetAttackDamageByType() => attackDamage;
 
     Transform FindClosestByTag(string tagName)
     {
@@ -224,9 +232,11 @@ public class Enemy : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
+        // ì‹œì•¼
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, visionRange);
 
+        // ê³µê²© íŒì •
         Gizmos.color = Color.red;
         Vector3 c = attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
         Gizmos.DrawWireSphere(c, attackRange);
