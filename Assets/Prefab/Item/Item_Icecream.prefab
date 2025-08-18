@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1055935538880193279}
   - component: {fileID: 7648512667389248541}
   - component: {fileID: 7107595506555239173}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: Item_Icecream
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,6 +107,10 @@ PrefabInstance:
     - target: {fileID: 1690660832074952870, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
       propertyPath: m_Name
       value: Icecream
+      objectReference: {fileID: 0}
+    - target: {fileID: 1690660832074952870, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
+      propertyPath: m_Layer
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 2390627215544451765, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
       propertyPath: m_LocalPosition.x

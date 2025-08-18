@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3746232736848856085}
   - component: {fileID: 7198400429676779535}
   - component: {fileID: 618448019385656921}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: Item_Baseballbat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,6 +147,10 @@ PrefabInstance:
     - target: {fileID: 8751884222236341439, guid: f45d28f501bec3740b6752ebee85d4bf, type: 3}
       propertyPath: m_Name
       value: Baseball bat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8751884222236341439, guid: f45d28f501bec3740b6752ebee85d4bf, type: 3}
+      propertyPath: m_Layer
+      value: 22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

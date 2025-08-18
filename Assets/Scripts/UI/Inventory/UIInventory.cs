@@ -1,3 +1,4 @@
+using System.Data.Common;
 using TMPro;
 using UnityEngine;
 
@@ -229,27 +230,27 @@ public class UIInventory : MonoBehaviour
         ItemSlot slot = targetArray[index];
         if (slot.item == null) return;
 
-        Debug.Log($"Using {slot.item.displayName}");
+        ItemData data = slot.item;
 
-            if (slot.item.type == ItemType.Consumable)
+        Debug.Log($"Using {data.displayName}");
+
+        if (data.type == ItemType.Consumable)
+        {
+            foreach (var c in data.consumables)
             {
-                // Apply effects here
-                foreach (var c in slot.item.consumables)
-                {
-                    // Example: CharacterManager.Instance.Player.condition.Apply(c);
-                }
+                // Apply effect
+                //CharacterManager.Instance.Player.condition.ApplyConsumable(c);
+            }
 
-                slot.quantity--;
-                if (slot.quantity <= 0)
-                {
-                    // Remove the item completely
-                    targetArray[index].Clear();
-                }
+            // Reduce stack
+            slot.quantity--;
+            if (slot.quantity <= 0) slot.Clear();
 
-                UpdateUI();      // Refresh visuals
-                UpdateHotbarDisplay(); // Refresh hotbar UI
+            UpdateUI();
+            UpdateHotbarDisplay();
         }
     }
+
 
 
     public void HighlightHotbarSlot(int index)

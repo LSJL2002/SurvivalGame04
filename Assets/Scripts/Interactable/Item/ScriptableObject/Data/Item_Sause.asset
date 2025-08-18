@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: "\uC18C\uC2A4"
   description: "\uC18C\uC2A4"
   type: 0
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a939b833ca01bf540b9b0e0a32cb2ae6, type: 3}
   dropPrefab: {fileID: 9050825541863731776, guid: 813661fac668b1641a0593c79112d7ec, type: 3}
   attackDamage: 0
   canStack: 1
