@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6678197609691878819}
   - component: {fileID: 7338750585974107677}
   - component: {fileID: 4430233400633418447}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: Item_Axe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,6 +105,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 5948087970295280820}
     m_Modifications:
     - target: {fileID: 119982394829666062, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 119982394829666062, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 119982394829666062, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 119982394829666062, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -147,6 +159,10 @@ PrefabInstance:
     - target: {fileID: 4031032290754266397, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
       propertyPath: m_Name
       value: Axe
+      objectReference: {fileID: 0}
+    - target: {fileID: 4031032290754266397, guid: 5840fee55d117284996abcbaff270fdc, type: 3}
+      propertyPath: m_Layer
+      value: 22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

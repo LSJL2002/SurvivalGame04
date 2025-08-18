@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6253438635260745023}
   - component: {fileID: 3146612342339566688}
   - component: {fileID: 7832635048335683287}
-  m_Layer: 0
+  m_Layer: 22
   m_Name: Item_Samdwichfull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,6 +107,10 @@ PrefabInstance:
     - target: {fileID: 6058335559565596302, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
       propertyPath: m_Name
       value: Samdwichfull
+      objectReference: {fileID: 0}
+    - target: {fileID: 6058335559565596302, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
+      propertyPath: m_Layer
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 7082141101591667869, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
       propertyPath: m_LocalPosition.x
