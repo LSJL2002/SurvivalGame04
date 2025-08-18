@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class EnemyHealth : MonoBehaviour, IDamageable
 {
     [Header("HP")]
-    public int maxHP = 50;
+    [HideInInspector] public int maxHP = 50;
     public bool destroyOnDeath = true;
     public float destroyDelay = 3f;
 
@@ -17,12 +17,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public string hurtTrigger = "Hurt";
     public string deadBool = "Dead";
 
-    private int currentHP;
-    private Rigidbody rb;
-    private Animator anim;
-    private Renderer rend;              // ÀÚ½Ä±îÁö Æ÷ÇÔ
-    private Color originalColor;
-    private Enemy enemyAI;              // »óÅÂ Á¦¾î¿ë(¼±ÅÃ)
+    int currentHP;
+    Rigidbody rb;
+    Animator anim;
+    Renderer rend;
+    Color originalColor;
+    Enemy enemyAI;
 
     void Awake()
     {
@@ -30,7 +30,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         anim = GetComponentInChildren<Animator>();
         rend = GetComponentInChildren<Renderer>();
         enemyAI = GetComponent<Enemy>();
-
         if (rend) originalColor = rend.material.color;
     }
 
@@ -39,23 +38,27 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP = maxHP;
     }
 
+    public void SetMaxHP(int newMax, bool fill = true)
+    {
+        maxHP = newMax;
+        currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
+    }
+
+    // â¬‡â¬‡ CS0535 í•´ê²°: ì¸í„°í˜ì´ìŠ¤ì™€ ë™ì¼í•œ ì‹œê·¸ë‹ˆì²˜
     public void TakeDamage(int amount, Vector3 hitDir)
     {
         if (currentHP <= 0) return;
 
         currentHP -= amount;
 
-        // ÇÇ°İ ÇÃ·¡½Ã(»¡°£»ö ¡æ ¿ø·¡»ö)
         if (rend) StartCoroutine(FlashRed());
 
-        // ³Ë¹é
         if (rb)
         {
             Vector3 force = hitDir.normalized * knockbackForce + Vector3.up * 0.3f;
             rb.AddForce(force, ForceMode.Impulse);
         }
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç
         if (anim && !string.IsNullOrEmpty(hurtTrigger))
             anim.SetTrigger(hurtTrigger);
 
@@ -63,28 +66,24 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             Die();
     }
 
-    private IEnumerator FlashRed()
+    IEnumerator FlashRed()
     {
-        var mat = rend.material;         // ÀÎ½ºÅÏ½ºÈ­µÈ ¸ÓÆ¼¸®¾ó
+        var mat = rend.material;
         mat.color = Color.red;
         yield return new WaitForSeconds(flashDuration);
         mat.color = originalColor;
     }
 
-    private void Die()
+    void Die()
     {
-        // AI Á¤Áö
         if (enemyAI) enemyAI.SetDeadState();
 
-        // Äİ¶óÀÌ´õ ¸·±â
         foreach (var col in GetComponentsInChildren<Collider>())
             col.enabled = false;
 
-        // ¾Ö´Ï¸ŞÀÌ¼Ç
         if (anim && !string.IsNullOrEmpty(deadBool))
             anim.SetBool(deadBool, true);
 
-        // ¸®Áöµå¹Ùµğ Á¤Áö
         if (rb)
         {
             rb.velocity = Vector3.zero;
