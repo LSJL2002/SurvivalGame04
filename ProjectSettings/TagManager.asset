@@ -16,6 +16,7 @@ TagManager:
   - Player
   - Enemy
   - Interactable
+  - Equipment
   - 
   - 
   - 
@@ -29,7 +30,6 @@ TagManager:
   - 
   - 
   - 
-  - Interactable
   - 
   - 
   - 

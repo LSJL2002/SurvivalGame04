@@ -6,7 +6,7 @@ public class UIHotbar : MonoBehaviour
     [SerializeField] private UIInventory inventoryUI;
     private ItemSlot[] hotbarSlots;
 
-    private int selectedIndex = 0;
+    private int selectedIndex = -1;
 
     void Start()
     {
@@ -57,13 +57,32 @@ public class UIHotbar : MonoBehaviour
 
     private void SelectSlot(int index)
     {
+        Debug.Log("SelectSlot called: " + index);
         if (index < 0 || index >= hotbarSlots.Length) return;
+
+        // Always unequip current equip
+        if (CharacterManager.Instance.Player.equip.curEquip != null)
+        {
+            CharacterManager.Instance.Player.equip.UnEquip();
+            Debug.Log("Unequipped current item");
+        }
+
+        // Update selection index
         selectedIndex = index;
 
-        // Highlight only the selected slot, regardless of whether it has an item
+        // Highlight only the selected slot
         for (int i = 0; i < hotbarSlots.Length; i++)
             hotbarSlots[i].outline.enabled = (i == selectedIndex);
+
+        // Equip the new slot's item if it's equipable
+        ItemSlot newSlot = hotbarSlots[selectedIndex];
+        if (newSlot.item != null && newSlot.item.type == ItemType.Equipable)
+        {
+            CharacterManager.Instance.Player.equip.EquipNew(newSlot.item);
+            Debug.Log("Equipped: " + newSlot.item.displayName);
+        }
     }
+
 
     private void UseSelectedItem()
     {
