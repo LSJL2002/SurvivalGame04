@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
+  m_Name: Item_Test
+  m_EditorClassIdentifier: 
+  displayName: "\uCD1D"
+  description: "\uCD1D"
+  type: 1
+  icon: {fileID: 0}
+  dropPrefab: {fileID: 8222641240628047402, guid: a54eb797e52e1e640ab9bf2d099fae95, type: 3}
+  attackDamage: 0
+  canStack: 0
+  maxStackAmount: 0
+  consumables: []
+  equipPrefab: {fileID: 0}
+  boostDuration: 0
