@@ -154,6 +154,16 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+    public void OnAttackInput(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Started)
+        {
+            if (CharacterManager.Instance.Player.equip.curEquip != null)
+            {
+                CharacterManager.Instance.Player.equip.curEquip.OnAttackInput();
+            }
+        }
+    }
 
     private void Move()
     {
