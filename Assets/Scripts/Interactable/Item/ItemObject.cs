@@ -8,6 +8,8 @@ public interface IInteractable
     public string GetInteractPrompt();
     public void OnInteract();
 }
+
+[SerializeField]
 public class ItemObject : MonoBehaviour, IInteractable
 {
     public ItemData data;
