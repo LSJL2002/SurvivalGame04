@@ -1,43 +1,55 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public enum ItemType
 {
+    Resource,
     Equipable,
-    Consumable,
-    Resource
+    Consumable
 }
 
 public enum ConsumableType
 {
+    Stamina,
     Health,
-    Hunger,
+    Boost
+}
+
+public enum BoostType
+{
+    None,
+    Speed,
+    Jump,
     Stamina
 }
 
-[Serializable]
+[System.Serializable]
 public class ItemDataConsumable
 {
     public ConsumableType type;
+    public BoostType boostType; 
     public float value;
 }
 
 [CreateAssetMenu(fileName = "Item", menuName = "New Item")]
 public class ItemData : ScriptableObject
 {
-    [Header("info")]
-    public string displayName;                  // displayName : 아이템 이름
-    public string description;                  // description : 아이템 설명
-    public ItemType type;                       // type : 아이템 타입
-    public Sprite Icon;                         // Icon : 아이템 아이콘
-    public GameObject dropPrefeb;               // dropPrefeb : 
+    [Header("Info")]
+    public string displayName;
+    public string description;
+    public ItemType type;
+    public Sprite icon;
+    public GameObject dropPrefab;
+    public int attackDamage;
 
     [Header("Stacking")]
-    public bool canStack;                       // canStack : 여러 개 한 번에 가질 수 있는지
-    public int maxStackAmount;                  // maxStackAmount : 한 번에 가질 수 있는 최대 양
+    public bool canStack;
+    public int maxStackAmount;
 
     [Header("Consumable")]
-    public ItemDataConsumable consumables;      // consumables : 어떤 속성을 얼마나 회복하는지
+    public ItemDataConsumable[] consumables;
+
+    [Header("Equip")]
+    public GameObject equipPrefab;
+    [Header("Boost Duration")]
+    public int boostDuration;
 }
