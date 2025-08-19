@@ -251,6 +251,22 @@ public class UIInventory : MonoBehaviour
         }
     }
 
+    private void ApplyConsumableEffect(ItemDataConsumable consumable, float duration)
+    {
+        var PlayerCondition = CharacterManager.Instance.Player.condition;
+
+        switch (consumable.type)
+        {
+            case ConsumableType.Health:
+                PlayerCondition.Heal(consumable.value);
+                break;
+            case ConsumableType.Stamina:
+                PlayerCondition.Recover(consumable.value);
+                break;
+            //case ConsumableType.
+        }
+    }
+
 
 
     public void HighlightHotbarSlot(int index)
