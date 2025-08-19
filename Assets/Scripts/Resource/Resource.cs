@@ -8,11 +8,11 @@ public class Resource : MonoBehaviour
     public int quantityPerHit = 1;
     public int capacity;
 
-    public List<EquipTool> allowedTools;
+    public List<ToolType> allowedTools;
 
     public void Gather(Vector3 hitPoint, Vector3 hitNormal, EquipTool usingTool)
     {
-        if (!allowedTools.Contains(usingTool))
+        if (!allowedTools.Contains(usingTool.ToolType))
         {
             return;
         }
@@ -23,6 +23,7 @@ public class Resource : MonoBehaviour
 
             capacity -= 1;
             Instantiate(itemToGive.dropPrefab, hitPoint + Vector3.up, Quaternion.LookRotation(hitNormal, Vector3.up));
+            Debug.Log("Instantiate");
         }
 
         if (capacity <= 0)

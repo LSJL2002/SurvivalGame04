@@ -2,8 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ToolType
+{
+    None,
+    Axe,
+    Pickaxe
+}
 public class EquipTool : Equip
 {
+    public ToolType ToolType;
     public float attackRate;
     private bool attacking;
     public float attackDistance;
