@@ -33,8 +33,8 @@ public class EquipTool : Equip
             {
                 Debug.Log("Attack)");
                 attacking = true;
-                //animator.SetTrigger("Attack");
-                //Invoke("OnCanAttack", attackRate);
+                animator.SetTrigger("Attack");
+                Invoke("OnCanAttack", attackRate);
             }
         }
     }
@@ -50,10 +50,10 @@ public class EquipTool : Equip
 
         if (Physics.Raycast(ray, out hit, attackDistance))
         {
-            // if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
-            // {
-            //     resource.Gather(hit.point, hit.normal);
-            // }
+            if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
+            {
+                resource.Gather(hit.point, hit.normal);
+            }
             if (doesDealDamage && hit.collider.TryGetComponent<IDamagable>(out IDamagable damagable))
             {
                 damagable.TakePhysicalDamage(damage);
