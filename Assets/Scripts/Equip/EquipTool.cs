@@ -52,7 +52,7 @@ public class EquipTool : Equip
         {
             if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
             {
-                resource.Gather(hit.point, hit.normal);
+                resource.Gather(hit.point, hit.normal, this);
             }
             if (doesDealDamage && hit.collider.TryGetComponent<IDamagable>(out IDamagable damagable))
             {
