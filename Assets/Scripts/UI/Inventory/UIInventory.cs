@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Data.Common;
 using TMPro;
 using UnityEngine;
@@ -238,8 +239,8 @@ public class UIInventory : MonoBehaviour
         {
             foreach (var c in data.consumables)
             {
-                // Apply effect
-                //CharacterManager.Instance.Player.condition.ApplyConsumable(c);
+                Debug.Log("Testing");
+                ApplyConsumableEffect(c, data.boostDuration);
             }
 
             // Reduce stack
@@ -263,7 +264,46 @@ public class UIInventory : MonoBehaviour
             case ConsumableType.Stamina:
                 PlayerCondition.Recover(consumable.value);
                 break;
-            //case ConsumableType.
+            case ConsumableType.Thirst:
+                PlayerCondition.Drink(consumable.value);
+                break;
+            case ConsumableType.Hunger:
+                PlayerCondition.Eat(consumable.value);
+                break;
+            case ConsumableType.Boost:
+                ApplyBoost(consumable, duration);
+                break;
+        }
+    }
+
+    private IEnumerator ApplyBoost(ItemDataConsumable consumable, float duration)
+    {
+        var player = CharacterManager.Instance.Player;
+        var controller = player.controller;
+        var condition = player.condition;
+
+        float baseMoveSpeed = controller.moveSpeed;
+        float baseJumpForce = controller.jumpPower;
+
+        switch (consumable.boostType)
+        {
+            case BoostType.Speed:
+                controller.moveSpeed = baseMoveSpeed * consumable.value;
+                yield return new WaitForSeconds(duration);
+                controller.moveSpeed = baseMoveSpeed;
+                break;
+
+            case BoostType.Jump:
+                controller.jumpPower = baseJumpForce * consumable.value;
+                yield return new WaitForSeconds(duration);
+                controller.jumpPower = baseJumpForce;
+                break;
+
+            case BoostType.Stamina:
+                condition.SendMessage("EnableInfiniteStamina", true);
+                yield return new WaitForSeconds(duration);
+                condition.SendMessage("EnableInfiniteStamina", false);
+                break;
         }
     }
 
