@@ -38,7 +38,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (isTyping)
         {
-            // 타이핑 중일 때 E키를 누르면 즉시 전체 문장 출력
+            // 타이핑 중일 때키를 누르면 즉시 전체 문장 출력
             CompleteTyping();
             return;
         }
