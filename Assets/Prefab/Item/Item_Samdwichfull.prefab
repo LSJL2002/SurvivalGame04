@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6253438635260745023}
   - component: {fileID: 3146612342339566688}
   - component: {fileID: 7832635048335683287}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Item_Samdwichfull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.18376648, y: 0.08084781, z: 0.12043589}
-  m_Center: {x: -0.0022656173, y: -0.04158098, z: -0.0011789948}
+  m_Size: {x: 0.18991503, y: 0.08084781, z: 0.12043589}
+  m_Center: {x: -0.0053398944, y: -0.04158098, z: -0.0011789948}
 --- !u!114 &7832635048335683287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +107,22 @@ PrefabInstance:
     - target: {fileID: 6058335559565596302, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
       propertyPath: m_Name
       value: Samdwichfull
+      objectReference: {fileID: 0}
+    - target: {fileID: 6058335559565596302, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7082141101591667869, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 7082141101591667869, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 7082141101591667869, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7082141101591667869, guid: 4e6778368a2577c43a9895f9499161bb, type: 3}
       propertyPath: m_LocalPosition.x

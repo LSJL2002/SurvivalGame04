@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1055935538880193279}
   - component: {fileID: 7648512667389248541}
   - component: {fileID: 7107595506555239173}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Item_Icecream
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.09495202, y: 0.16736805, z: 0.06980017}
-  m_Center: {x: 0.018470347, y: -0.04322408, z: -0.001031965}
+  m_Size: {x: 0.09205734, y: 0.14627826, z: 0.06980017}
+  m_Center: {x: 0.017023008, y: -0.04673904, z: -0.001031965}
 --- !u!114 &7107595506555239173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +107,22 @@ PrefabInstance:
     - target: {fileID: 1690660832074952870, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
       propertyPath: m_Name
       value: Icecream
+      objectReference: {fileID: 0}
+    - target: {fileID: 1690660832074952870, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2390627215544451765, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 2390627215544451765, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 2390627215544451765, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 2390627215544451765, guid: 42bedd291852b534cbac1c760b4d6ed0, type: 3}
       propertyPath: m_LocalPosition.x

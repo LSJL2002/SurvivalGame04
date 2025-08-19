@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4647727302221673209}
   - component: {fileID: 1875545328556317745}
   - component: {fileID: 5486532435795852841}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Item_Sause
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.04510508, y: 0.1245767, z: 0.04386106}
-  m_Center: {x: 0.00011377223, y: -0.026774839, z: 0.006640006}
+  m_Size: {x: 0.042849533, y: 0.1245767, z: 0.04245134}
+  m_Center: {x: -0.00016817171, y: -0.026774839, z: 0.0064990353}
 --- !u!114 &5486532435795852841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +107,10 @@ PrefabInstance:
     - target: {fileID: 1477106528230960001, guid: cad891bdb016c454aac71c01784988b9, type: 3}
       propertyPath: m_Name
       value: Sause
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477106528230960001, guid: cad891bdb016c454aac71c01784988b9, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 2460343459769948562, guid: cad891bdb016c454aac71c01784988b9, type: 3}
       propertyPath: m_LocalPosition.x

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2247786643160056553}
   - component: {fileID: 8783469272605169602}
   - component: {fileID: 6008839843459029903}
-  m_Layer: 22
+  m_Layer: 8
   m_Name: Item_Hotdog
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,8 +54,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.11615613, y: 0.021783082, z: 0.03169634}
-  m_Center: {x: 0.0006897021, y: -0.0019823117, z: 0.0002867654}
+  m_Size: {x: 0.11442581, y: 0.021783082, z: 0.03046042}
+  m_Center: {x: 0.00007173419, y: -0.0019823117, z: 0.00016316492}
 --- !u!54 &8783469272605169602
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -150,11 +150,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8719515407289920457, guid: 44b4cb22542e7f645beaff8eec051826, type: 3}
       propertyPath: m_Layer
-      value: 22
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 4024617333695817636, guid: 44b4cb22542e7f645beaff8eec051826, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 44b4cb22542e7f645beaff8eec051826, type: 3}

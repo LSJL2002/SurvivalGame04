@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3671558504365419041}
   - component: {fileID: 838512661743769581}
   - component: {fileID: 1387527357635759724}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Item_Mayo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.04277549, y: 0.124345124, z: 0.045239285}
-  m_Center: {x: -0.000000078231096, y: -0.025746172, z: 0.0061681047}
+  m_Size: {x: 0.04137083, y: 0.124345124, z: 0.04158717}
+  m_Center: {x: 0.0001403885, y: -0.025746174, z: 0.006589504}
 --- !u!114 &1387527357635759724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +107,10 @@ PrefabInstance:
     - target: {fileID: 2020155931932752882, guid: 102a0ef3853e7b6489ca315cc15d73e9, type: 3}
       propertyPath: m_Name
       value: Mayo
+      objectReference: {fileID: 0}
+    - target: {fileID: 2020155931932752882, guid: 102a0ef3853e7b6489ca315cc15d73e9, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3049588704825379297, guid: 102a0ef3853e7b6489ca315cc15d73e9, type: 3}
       propertyPath: m_LocalPosition.x
