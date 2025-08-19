@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,8 +9,8 @@ public class DialogueManager : MonoBehaviour
     public static DialogueManager Instance;
 
     public GameObject dialoguePanel;
-    public Text nameText;
-    public Text dialogueText;
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI dialogueText;
 
     private string[] dialogues;
     private int currentIndex;
@@ -22,29 +23,31 @@ public class DialogueManager : MonoBehaviour
 
     public void StartDialogue(string npcName, string[] lines)
     {
+        Time.timeScale = 0f;
         dialoguePanel.SetActive(true);
         nameText.text = npcName;
-        dialogues = lines;           //´ë»ç ¹è¿­ ÀúÀå
-        currentIndex = 0;            //Ã¹¹øÂ° ´ë»çºÎÅÍ   
-        ShowNextDialogue();          //Ã¹ ´ë»ç Ãâ·Â   
+        dialogues = lines;           //ï¿½ï¿½ï¿½ ï¿½è¿­ ï¿½ï¿½ï¿½ï¿½
+        currentIndex = 0;            //Ã¹ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½   
+        ShowNextDialogue();          //Ã¹ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½   
     }
 
     public void ShowNextDialogue()
     {
         if (currentIndex < dialogues.Length)
         {
-            dialogueText.text = dialogues[currentIndex];   // ÇöÀç ´ë»ç Ãâ·Â
+            dialogueText.text = dialogues[currentIndex];   // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             currentIndex++;
         }
         else
         {
-            EndDialogue();      // ¸ðµç ´ë»ç¸¦ º¸¿©Áá´Ù¸é ´ëÈ­ Á¾·á
+            EndDialogue();      // ï¿½ï¿½ï¿½ ï¿½ï¿½ç¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
         }
     }
 
     public void EndDialogue()
     {
         dialoguePanel.SetActive(false);
+        Time.timeScale = 1f;
     }
 
     void Update()
