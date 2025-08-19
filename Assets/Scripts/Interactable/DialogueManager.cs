@@ -14,6 +14,9 @@ public class DialogueManager : MonoBehaviour
 
     private string[] dialogues;
     private int currentIndex;
+    private Coroutine typingCoroutine;
+    private bool isTyping = false;
+    private float typingSpeed = 0.04f; // 타이핑 속도(초)
 
     void Awake()
     {
@@ -26,22 +29,53 @@ public class DialogueManager : MonoBehaviour
         Time.timeScale = 0f;
         dialoguePanel.SetActive(true);
         nameText.text = npcName;
-        dialogues = lines;           //��� �迭 ����
-        currentIndex = 0;            //ù��° ������   
-        ShowNextDialogue();          //ù ��� ���   
+        dialogues = lines;
+        currentIndex = 0;
+        ShowNextDialogue();
     }
 
     public void ShowNextDialogue()
     {
+        if (isTyping)
+        {
+            // 타이핑 중일 때 E키를 누르면 즉시 전체 문장 출력
+            CompleteTyping();
+            return;
+        }
+
         if (currentIndex < dialogues.Length)
         {
-            dialogueText.text = dialogues[currentIndex];   // ���� ��� ���
+            if (typingCoroutine != null)
+                StopCoroutine(typingCoroutine);
+
+            typingCoroutine = StartCoroutine(TypeSentence(dialogues[currentIndex]));
             currentIndex++;
         }
         else
         {
-            EndDialogue();      // ��� ��縦 ������ٸ� ��ȭ ����
+            EndDialogue();
         }
+    }
+
+    IEnumerator TypeSentence(string sentence)
+    {
+        isTyping = true;
+        dialogueText.text = "";
+        foreach (char letter in sentence)
+        {
+            dialogueText.text += letter;
+            yield return new WaitForSecondsRealtime(typingSpeed);
+        }
+        isTyping = false;
+    }
+
+    private void CompleteTyping()
+    {
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
+        dialogueText.text = dialogues[currentIndex - 1];
+        isTyping = false;
     }
 
     public void EndDialogue()
