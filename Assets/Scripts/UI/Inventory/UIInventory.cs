@@ -372,6 +372,77 @@ public class UIInventory : MonoBehaviour
             UpdateHotbarData(i);
     }
 
+    public bool HasItem(ItemData item, int amount)
+    {
+        int total = 0;
+
+        // Count in hotbar
+        foreach (var slot in hotbarSlots)
+        {
+            if (slot.item == item)
+                total += slot.quantity;
+        }
+
+        // Count in inventory
+        foreach (var slot in inventorySlots)
+        {
+            if (slot.item == item)
+                total += slot.quantity;
+        }
+
+        return total >= amount;
+    }
+    public void RemoveItem(ItemData item, int amount)
+    {
+        int remaining = amount;
+
+        // Remove from hotbar first
+        foreach (var slot in hotbarSlots)
+        {
+            if (slot.item == item)
+            {
+                if (slot.quantity >= remaining)
+                {
+                    slot.quantity -= remaining;
+                    if (slot.quantity <= 0) slot.Clear();
+                    UpdateUI();
+                    UpdateHotbarDisplay();
+                    return;
+                }
+                else
+                {
+                    remaining -= slot.quantity;
+                    slot.Clear();
+                }
+            }
+        }
+
+        // Then remove from inventory
+        foreach (var slot in inventorySlots)
+        {
+            if (slot.item == item)
+            {
+                if (slot.quantity >= remaining)
+                {
+                    slot.quantity -= remaining;
+                    if (slot.quantity <= 0) slot.Clear();
+                    UpdateUI();
+                    UpdateHotbarDisplay();
+                    return;
+                }
+                else
+                {
+                    remaining -= slot.quantity;
+                    slot.Clear();
+                }
+            }
+        }
+
+        UpdateUI();
+        UpdateHotbarDisplay();
+    }
+
+
     // Public access to both slot arrays
     public ItemSlot[] GetInventorySlots() => inventorySlots;
     public ItemSlot[] GetHotbarSlots() => hotbarSlots;
