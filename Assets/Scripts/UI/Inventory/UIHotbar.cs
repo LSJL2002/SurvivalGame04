@@ -86,6 +86,9 @@ public class UIHotbar : MonoBehaviour
 
     private void UseSelectedItem()
     {
+        // Make sure a slot is selected first
+        if (selectedIndex < 0 || selectedIndex >= hotbarSlots.Length) return;
+
         if (hotbarSlots[selectedIndex].item == null) return;
 
         // Let UIInventory handle usage and data sync

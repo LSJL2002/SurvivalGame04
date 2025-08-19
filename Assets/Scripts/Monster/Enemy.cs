@@ -2,29 +2,31 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
+[DefaultExecutionOrder(-100)] // EnemyHealth.Start()보다 먼저 동작(HP 세팅 선행)
 public class Enemy : MonoBehaviour
 {
-    public enum State { Idle, Patrol, Chase, Attack, Dead }
+    public enum State { Idle, Chase, Attack, Dead }
 
     [Header("Target")]
-    public string targetTag = "Player";     // 쫓을 태그
-    public LayerMask targetMask;            // 공격 판정 대상 레이어
-    public Transform target;                // 비워두면 태그로 자동탐색
+    public string targetTag = "Player";
+    public LayerMask targetMask;         // 공격 판정할 레이어(예: Player)
+    public Transform target;             // 비워두면 태그로 자동탐색
 
     [Header("Enemy Type (1~5)")]
     [Range(1, 5)] public int enemyType = 1;
+    [SerializeField] int[] hpByType = { 40, 60, 90, 120, 180 };
 
     [Header("Vision / Move")]
-    [SerializeField] float visionRange = 10f;
-    [SerializeField] float patrolDistance = 6f;
-    float patrolSpeed, chaseSpeed;
+    [SerializeField] float visionRange = 10f;  // 시야 거리
+    [SerializeField] float chaseSpeed = 3.0f;  // 타입별로 덮어씌움
+    [SerializeField] float stopDistance = 0.2f;
 
     [Header("Attack")]
-    [SerializeField] int attackDamage = 10;
-    [SerializeField] float attackRange = 2.0f;       // 판정 반경
-    [SerializeField] float attackCooldown = 1.2f;    // 공격 쿨타임
-    [SerializeField] float attackDelay = 0.15f;      // 애니 없이 사용할 타격 딜레이
-    [SerializeField] bool useAnimationEvent = false; // ✅ 애니메이션 이벤트 없이도 동작
+    [SerializeField] int attackDamage = 10;    // 타입별로 덮어씌움
+    [SerializeField] float attackRange = 2.0f;
+    [SerializeField] float attackCooldown = 1.2f;
+    [SerializeField] float attackDelay = 0.3f;       // 애니 이벤트 안 쓸 때 타이밍
+    [SerializeField] bool useAnimationEvent = true;  // 애니 이벤트로 타격할지
     [SerializeField] Transform attackPoint;          // 비워두면 전방 1m
 
     [Header("Animator Params")]
@@ -34,25 +36,20 @@ public class Enemy : MonoBehaviour
 
     Rigidbody rb;
     Animator anim;
-    State state = State.Patrol;
-
-    Vector3 spawnPos, patrolRight;
-    int patrolDir = 1;
+    EnemyHealth hp;
+    State state = State.Idle;
     float atkTimer;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
+        hp = GetComponent<EnemyHealth>();
+        ApplyEnemyType(); // 속도/공격력/HP 세팅
     }
 
     void Start()
     {
-        ApplyEnemyType();
-
-        spawnPos = transform.position;
-        patrolRight = spawnPos + Vector3.right * patrolDistance;
-
         if (!target)
         {
             var go = GameObject.FindGameObjectWithTag(targetTag);
@@ -63,21 +60,22 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         if (state == State.Dead) return;
+
         if (atkTimer > 0f) atkTimer -= Time.deltaTime;
 
-        // 이동 속도를 애니메이터에 전달 (Idle/Run 전환용)
+        // 애니 속도 파라미터(댐핑)
         if (anim)
         {
-            float planar = new Vector3(rb.velocity.x, 0, rb.velocity.z).magnitude;
-            anim.SetFloat(speedFloat, planar);
+            float planar = new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude;
+            anim.SetFloat(speedFloat, planar, 0.1f, Time.deltaTime);
         }
 
         switch (state)
         {
             case State.Idle:
-            case State.Patrol:
                 LookForTarget();
-                Patrol();
+                // 제자리 대기
+                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
                 break;
 
             case State.Chase:
@@ -85,20 +83,17 @@ public class Enemy : MonoBehaviour
                 break;
 
             case State.Attack:
-                rb.velocity = Vector3.zero; // 공격 중 이동 정지
+                rb.velocity = Vector3.zero;
                 break;
         }
 
-        // 타겟 바라보기(수평)
+        // 타겟 바라보기(수평 회전)
         if (target)
         {
-            var look = target.position - transform.position; look.y = 0;
+            var look = target.position - transform.position; look.y = 0f;
             if (look.sqrMagnitude > 0.001f)
                 transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    Quaternion.LookRotation(look),
-                    Time.deltaTime * 10f
-                );
+                    transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 10f);
         }
     }
 
@@ -107,28 +102,19 @@ public class Enemy : MonoBehaviour
         if (!target || Vector3.Distance(transform.position, target.position) > visionRange)
             target = FindClosestByTag(targetTag);
 
-        if (!target) { state = State.Patrol; return; }
+        if (!target) { state = State.Idle; return; }
 
         float dist = Vector3.Distance(transform.position, target.position);
-        state = (dist <= visionRange) ? State.Chase : State.Patrol;
-    }
-
-    void Patrol()
-    {
-        Vector3 goal = (patrolDir > 0) ? patrolRight : spawnPos;
-        MoveTowards(goal, patrolSpeed);
-        if (Vector3.Distance(transform.position, goal) < 0.3f)
-            patrolDir *= -1;
+        state = (dist <= visionRange) ? State.Chase : State.Idle;
     }
 
     void Chase()
     {
-        if (!target) { state = State.Patrol; return; }
+        if (!target) { state = State.Idle; return; }
 
         float dist = Vector3.Distance(transform.position, target.position);
-        if (dist > visionRange * 1.2f) { state = State.Patrol; return; }
+        if (dist > visionRange * 1.25f) { state = State.Idle; return; }
 
-        // 사거리 + 쿨타임 충족 시 공격 시작
         if (dist <= attackRange && atkTimer <= 0f)
         {
             StartAttack();
@@ -140,12 +126,18 @@ public class Enemy : MonoBehaviour
 
     void MoveTowards(Vector3 goal, float speed)
     {
-        Vector3 dir = (goal - transform.position).normalized;
-        dir.y = 0;
+        Vector3 to = goal - transform.position; to.y = 0f;
+        if (to.magnitude <= stopDistance)
+        {
+            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+            return;
+        }
+
+        Vector3 dir = to.normalized;
         rb.velocity = dir * speed + Vector3.up * rb.velocity.y; // 중력 유지
     }
 
-    // ───────── Attack core ─────────
+    // ───── Attack core ─────
     void StartAttack()
     {
         state = State.Attack;
@@ -154,10 +146,9 @@ public class Enemy : MonoBehaviour
 
         if (anim) anim.SetTrigger(attackTrigger);
 
-        // 이벤트를 쓰지 않는 간단 모드: 딜레이 후 범위 판정
         if (!useAnimationEvent)
             StartCoroutine(AttackHitAfter(attackDelay));
-        // useAnimationEvent == true면, 애니메이션 이벤트에서 AnimationAttackHit() 호출
+        // useAnimationEvent=true면 애니메이션 이벤트에서 AnimationAttackHit() 호출
     }
 
     IEnumerator AttackHitAfter(float delay)
@@ -167,8 +158,7 @@ public class Enemy : MonoBehaviour
         if (state != State.Dead) state = State.Chase;
     }
 
-    // 애니메이션 이벤트용 (Clip 타임라인에서 호출)
-    // Animation Event 이름: AnimationAttackHit
+    // 애니메이션 이벤트용 (클립 타임라인에서 호출)
     public void AnimationAttackHit()
     {
         if (state == State.Dead) return;
@@ -177,23 +167,21 @@ public class Enemy : MonoBehaviour
 
     void DoMeleeHit()
     {
-        // 판정 중심: attackPoint 지정 시 그 위치, 없으면 전방 1m
         Vector3 center = attackPoint
             ? attackPoint.position
             : (transform.position + transform.forward * 1.0f);
 
-        // 반경 내 대상 레이어만 탐색
         Collider[] hits = Physics.OverlapSphere(center, attackRange, targetMask);
         foreach (var h in hits)
         {
             if (h.TryGetComponent<IDamageable>(out var dmg))
             {
                 Vector3 dirToTarget = (h.transform.position - transform.position).normalized;
-                dmg.TakeDamage(GetAttackDamageByType(), dirToTarget);
+                dmg.TakeDamage(attackDamage, dirToTarget);
             }
         }
     }
-    // ───────────────────────────────
+    // ───────────────────────
 
     // EnemyHealth에서 사망 시 호출
     public void SetDeadState()
@@ -205,17 +193,22 @@ public class Enemy : MonoBehaviour
 
     void ApplyEnemyType()
     {
+        // 타입별 스탯
         switch (enemyType)
         {
-            case 1: patrolSpeed = 1.5f; chaseSpeed = 2.5f; attackDamage = 5; break;
-            case 2: patrolSpeed = 1.6f; chaseSpeed = 2.7f; attackDamage = 8; break;
-            case 3: patrolSpeed = 1.7f; chaseSpeed = 3.0f; attackDamage = 12; break;
-            case 4: patrolSpeed = 1.8f; chaseSpeed = 3.3f; attackDamage = 16; break;
-            case 5: patrolSpeed = 2.0f; chaseSpeed = 3.6f; attackDamage = 22; break;
+            case 1: chaseSpeed = 2.5f; attackDamage = 5; break;
+            case 2: chaseSpeed = 2.7f; attackDamage = 8; break;
+            case 3: chaseSpeed = 3.0f; attackDamage = 12; break;
+            case 4: chaseSpeed = 3.3f; attackDamage = 16; break;
+            case 5: chaseSpeed = 3.6f; attackDamage = 22; break;
+        }
+
+        if (hp)
+        {
+            int idx = Mathf.Clamp(enemyType - 1, 0, hpByType.Length - 1);
+            hp.SetMaxHP(hpByType[idx], true); // HP도 타입에 맞춰 자동 세팅
         }
     }
-
-    int GetAttackDamageByType() => attackDamage;
 
     Transform FindClosestByTag(string tagName)
     {
@@ -232,11 +225,9 @@ public class Enemy : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // 시야
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, visionRange);
 
-        // 공격 판정
         Gizmos.color = Color.red;
         Vector3 c = attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
         Gizmos.DrawWireSphere(c, attackRange);

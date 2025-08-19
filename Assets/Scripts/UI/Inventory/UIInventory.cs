@@ -1,12 +1,23 @@
+using System.Collections;
 using System.Data.Common;
 using TMPro;
 using UnityEngine;
 
+
+
 public class UIInventory : MonoBehaviour
 {
+    private enum ActiveMenu
+    {
+        None,
+        Inventory,
+        Crafting
+    }
+    private ActiveMenu currentMenu = ActiveMenu.None;
     [Header("Panels")]
     public Transform inventorySlotPanel;
     public Transform hotbarSlotPanel;
+    public GameObject craftingWindow;
 
     [Header("UI References")]
     public GameObject inventoryWindow;
@@ -35,10 +46,11 @@ public class UIInventory : MonoBehaviour
         condition = CharacterManager.Instance.Player.condition;
         dropPosition = CharacterManager.Instance.Player.dropPosition;
 
-        controller.inventory += Toggle;
+        controller.inventory += ToggleUI;
         CharacterManager.Instance.Player.addItem += AddItem;
 
         inventoryWindow.SetActive(false);
+        craftingWindow.SetActive(false);
 
         // Initialize inventory slots
         inventorySlots = new ItemSlot[inventorySlotPanel.childCount];
@@ -77,9 +89,22 @@ public class UIInventory : MonoBehaviour
         selectedStatValue.text = "";
     }
 
-    public void Toggle()
+    public void ToggleUI()
     {
-        inventoryWindow.SetActive(!inventoryWindow.activeSelf);
+        // If either menu is open, close both
+        if (currentMenu != ActiveMenu.None)
+        {
+            inventoryWindow.SetActive(false);
+            craftingWindow.SetActive(false);
+            currentMenu = ActiveMenu.None;
+        }
+        else
+        {
+            // If nothing is open, open inventory by default
+            inventoryWindow.SetActive(true);
+            craftingWindow.SetActive(false);
+            currentMenu = ActiveMenu.Inventory;
+        }
     }
 
     public bool IsOpen() => inventoryWindow.activeInHierarchy;
@@ -238,8 +263,8 @@ public class UIInventory : MonoBehaviour
         {
             foreach (var c in data.consumables)
             {
-                // Apply effect
-                //CharacterManager.Instance.Player.condition.ApplyConsumable(c);
+                Debug.Log("Testing");
+                ApplyConsumableEffect(c, data.boostDuration);
             }
 
             // Reduce stack
@@ -248,6 +273,61 @@ public class UIInventory : MonoBehaviour
 
             UpdateUI();
             UpdateHotbarDisplay();
+        }
+    }
+
+    private void ApplyConsumableEffect(ItemDataConsumable consumable, float duration)
+    {
+        var PlayerCondition = CharacterManager.Instance.Player.condition;
+
+        switch (consumable.type)
+        {
+            case ConsumableType.Health:
+                PlayerCondition.Heal(consumable.value);
+                break;
+            case ConsumableType.Stamina:
+                PlayerCondition.Recover(consumable.value);
+                break;
+            case ConsumableType.Thirst:
+                PlayerCondition.Drink(consumable.value);
+                break;
+            case ConsumableType.Hunger:
+                PlayerCondition.Eat(consumable.value);
+                break;
+            case ConsumableType.Boost:
+                ApplyBoost(consumable, duration);
+                break;
+        }
+    }
+
+    private IEnumerator ApplyBoost(ItemDataConsumable consumable, float duration)
+    {
+        var player = CharacterManager.Instance.Player;
+        var controller = player.controller;
+        var condition = player.condition;
+
+        float baseMoveSpeed = controller.moveSpeed;
+        float baseJumpForce = controller.jumpPower;
+
+        switch (consumable.boostType)
+        {
+            case BoostType.Speed:
+                controller.moveSpeed = baseMoveSpeed * consumable.value;
+                yield return new WaitForSeconds(duration);
+                controller.moveSpeed = baseMoveSpeed;
+                break;
+
+            case BoostType.Jump:
+                controller.jumpPower = baseJumpForce * consumable.value;
+                yield return new WaitForSeconds(duration);
+                controller.jumpPower = baseJumpForce;
+                break;
+
+            case BoostType.Stamina:
+                condition.SendMessage("EnableInfiniteStamina", true);
+                yield return new WaitForSeconds(duration);
+                condition.SendMessage("EnableInfiniteStamina", false);
+                break;
         }
     }
 
@@ -315,6 +395,77 @@ public class UIInventory : MonoBehaviour
         for (int i = 0; i < hotbarSlots.Length; i++)
             UpdateHotbarData(i);
     }
+
+    public bool HasItem(ItemData item, int amount)
+    {
+        int total = 0;
+
+        // Count in hotbar
+        foreach (var slot in hotbarSlots)
+        {
+            if (slot.item == item)
+                total += slot.quantity;
+        }
+
+        // Count in inventory
+        foreach (var slot in inventorySlots)
+        {
+            if (slot.item == item)
+                total += slot.quantity;
+        }
+
+        return total >= amount;
+    }
+    public void RemoveItem(ItemData item, int amount)
+    {
+        int remaining = amount;
+
+        // Remove from hotbar first
+        foreach (var slot in hotbarSlots)
+        {
+            if (slot.item == item)
+            {
+                if (slot.quantity >= remaining)
+                {
+                    slot.quantity -= remaining;
+                    if (slot.quantity <= 0) slot.Clear();
+                    UpdateUI();
+                    UpdateHotbarDisplay();
+                    return;
+                }
+                else
+                {
+                    remaining -= slot.quantity;
+                    slot.Clear();
+                }
+            }
+        }
+
+        // Then remove from inventory
+        foreach (var slot in inventorySlots)
+        {
+            if (slot.item == item)
+            {
+                if (slot.quantity >= remaining)
+                {
+                    slot.quantity -= remaining;
+                    if (slot.quantity <= 0) slot.Clear();
+                    UpdateUI();
+                    UpdateHotbarDisplay();
+                    return;
+                }
+                else
+                {
+                    remaining -= slot.quantity;
+                    slot.Clear();
+                }
+            }
+        }
+
+        UpdateUI();
+        UpdateHotbarDisplay();
+    }
+
 
     // Public access to both slot arrays
     public ItemSlot[] GetInventorySlots() => inventorySlots;

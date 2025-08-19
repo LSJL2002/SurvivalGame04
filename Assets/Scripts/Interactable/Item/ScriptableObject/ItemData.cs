@@ -4,14 +4,17 @@ public enum ItemType
 {
     Resource,
     Equipable,
-    Consumable
+    Consumable,
+    Build
 }
 
 public enum ConsumableType
 {
     Stamina,
     Health,
-    Boost
+    Boost,
+    Thirst,
+    Hunger
 }
 
 public enum BoostType

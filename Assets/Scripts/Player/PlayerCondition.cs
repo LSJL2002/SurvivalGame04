@@ -45,7 +45,12 @@ public class PlayerCondition : MonoBehaviour, IDamagable
 
     public void Eat(float amount)
     {
-        health.Add(amount);
+        hunger.Add(amount);
+    }
+
+    public void Drink(float amount)
+    {
+        thirst.Add(amount);
     }
 
     // public void Boost(Func<float> getter, Action<float> setter, float multiplier, float duration, BoostType boostType)
