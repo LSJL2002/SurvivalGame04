@@ -24,21 +24,21 @@ public class DialogueManager : MonoBehaviour
     {
         dialoguePanel.SetActive(true);
         nameText.text = npcName;
-        dialogues = lines;
-        currentIndex = 0;
-        ShowNextDialogue();
+        dialogues = lines;           //대사 배열 저장
+        currentIndex = 0;            //첫번째 대사부터   
+        ShowNextDialogue();          //첫 대사 출력   
     }
 
     public void ShowNextDialogue()
     {
         if (currentIndex < dialogues.Length)
         {
-            dialogueText.text = dialogues[currentIndex];
+            dialogueText.text = dialogues[currentIndex];   // 현재 대사 출력
             currentIndex++;
         }
         else
         {
-            EndDialogue();
+            EndDialogue();      // 모든 대사를 보여줬다면 대화 종료
         }
     }
 
