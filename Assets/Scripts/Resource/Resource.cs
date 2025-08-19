@@ -8,11 +8,11 @@ public class Resource : MonoBehaviour
     public int quantityPerHit = 1;
     public int capacity;
 
-    public List<EquipTool> allowedTools;
+    public List<ToolType> allowedTools;
 
     public void Gather(Vector3 hitPoint, Vector3 hitNormal, EquipTool usingTool)
     {
-        if (!allowedTools.Contains(usingTool))
+        if (!allowedTools.Contains(usingTool.ToolType))
         {
             return;
         }
