@@ -2,21 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Npc : MonoBehaviour
+public class Npc : MonoBehaviour, IInteractable
 {
+    public string npcName;
+    public string[] dialogues; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-    public string npcName = "»ýÁ¸ÀÚ";
-    [TextArea]
-    public string[] dialogues; // ¿©·¯ ¹®Àå Áö¿ø
-    void Awake()
+    public string GetInteractPrompt()
     {
-        dialogues = new string[]
-        {
-            "¿©±ä À§ÇèÇØ, Á¶½ÉÈ÷ ´Ù³à.",
-            "³»°¡ µµ¿ÍÁÙ ¼ö ÀÖ´Â °Ô ÀÖÀ»±î?"
-        };
+        string str = $"{npcName}";
+        return str;
     }
-    public virtual void Interact()
+
+    public void OnInteract()
     {
         DialogueManager.Instance.StartDialogue(npcName, dialogues);
     }
