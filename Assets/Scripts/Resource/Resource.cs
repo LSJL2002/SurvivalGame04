@@ -23,6 +23,7 @@ public class Resource : MonoBehaviour
 
             capacity -= 1;
             Instantiate(itemToGive.dropPrefab, hitPoint + Vector3.up, Quaternion.LookRotation(hitNormal, Vector3.up));
+            Debug.Log("Instantiate");
         }
 
         if (capacity <= 0)
