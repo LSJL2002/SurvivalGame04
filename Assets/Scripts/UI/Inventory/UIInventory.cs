@@ -3,11 +3,21 @@ using System.Data.Common;
 using TMPro;
 using UnityEngine;
 
+
+
 public class UIInventory : MonoBehaviour
 {
+    private enum ActiveMenu
+    {
+        None,
+        Inventory,
+        Crafting
+    }
+    private ActiveMenu currentMenu = ActiveMenu.None;
     [Header("Panels")]
     public Transform inventorySlotPanel;
     public Transform hotbarSlotPanel;
+    public GameObject craftingWindow;
 
     [Header("UI References")]
     public GameObject inventoryWindow;
@@ -36,10 +46,11 @@ public class UIInventory : MonoBehaviour
         condition = CharacterManager.Instance.Player.condition;
         dropPosition = CharacterManager.Instance.Player.dropPosition;
 
-        controller.inventory += Toggle;
+        controller.inventory += ToggleUI;
         CharacterManager.Instance.Player.addItem += AddItem;
 
         inventoryWindow.SetActive(false);
+        craftingWindow.SetActive(false);
 
         // Initialize inventory slots
         inventorySlots = new ItemSlot[inventorySlotPanel.childCount];
@@ -78,9 +89,22 @@ public class UIInventory : MonoBehaviour
         selectedStatValue.text = "";
     }
 
-    public void Toggle()
+    public void ToggleUI()
     {
-        inventoryWindow.SetActive(!inventoryWindow.activeSelf);
+        // If either menu is open, close both
+        if (currentMenu != ActiveMenu.None)
+        {
+            inventoryWindow.SetActive(false);
+            craftingWindow.SetActive(false);
+            currentMenu = ActiveMenu.None;
+        }
+        else
+        {
+            // If nothing is open, open inventory by default
+            inventoryWindow.SetActive(true);
+            craftingWindow.SetActive(false);
+            currentMenu = ActiveMenu.Inventory;
+        }
     }
 
     public bool IsOpen() => inventoryWindow.activeInHierarchy;
