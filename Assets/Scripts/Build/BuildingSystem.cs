@@ -7,9 +7,6 @@ public class BuildingSystem : MonoBehaviour
 
     private ItemData currentBuildItem;
 
-    /// <summary>
-    /// Call this when you select a build item in the hotbar.
-    /// </summary>
     public void StartPlacing(ItemData item)
     {
         if (item == null || item.type != ItemType.Build || item.buildPrefab == null) return;
@@ -17,9 +14,6 @@ public class BuildingSystem : MonoBehaviour
         currentBuildItem = item;
     }
 
-    /// <summary>
-    /// Call this when you deselect a build item.
-    /// </summary>
     public void CancelPlacement()
     {
         currentBuildItem = null;
@@ -43,10 +37,27 @@ public class BuildingSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         if (Physics.Raycast(ray, out RaycastHit hit, 10f, placementLayer))
         {
-            Instantiate(currentBuildItem.buildPrefab, hit.point, Quaternion.FromToRotation(Vector3.up, hit.normal));
+            // Instantiate the object
+            GameObject newObj = Instantiate(currentBuildItem.buildPrefab);
+
+            // Align rotation to surface normal
+            newObj.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+
+            // Adjust position so bottom of the object sits on the hit point
+            Collider objCollider = newObj.GetComponent<Collider>();
+            if (objCollider != null)
+            {
+                newObj.transform.position = hit.point + Vector3.up * objCollider.bounds.extents.y;
+            }
+            else
+            {
+                newObj.transform.position = hit.point;
+            }
+
+            // Remove item from inventory
             uiInventory.RemoveItem(currentBuildItem, 1);
 
-            // If no more of this item, stop placing
+            // Stop placing if no more items
             if (!uiInventory.HasItem(currentBuildItem, 1))
                 CancelPlacement();
         }
