@@ -17368,14 +17368,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zombie deform
       objectReference: {fileID: 0}
-    - target: {fileID: 3799983744917626093, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: playerMask.m_Bits
-      value: 64
-      objectReference: {fileID: 0}
-    - target: {fileID: 5820317343889404040, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: m_IsKinematic
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
