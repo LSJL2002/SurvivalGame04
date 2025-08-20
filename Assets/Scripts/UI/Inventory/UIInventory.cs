@@ -213,7 +213,13 @@ public class UIInventory : MonoBehaviour
 
     public void ThrowItem(ItemData data, int amount)
     {
+        var player = CharacterManager.Instance.Player;
         Transform playerTransform = CharacterManager.Instance.Player.transform;
+
+        if (player.equip.curEquip != null && player.equip.curEquip.itemData == data)
+        {
+            player.equip.UnEquip();
+        }
 
         for (int i = 0; i < amount; i++)
         {

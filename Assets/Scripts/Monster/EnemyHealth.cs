@@ -44,7 +44,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
     }
 
-    // ⬇⬇ CS0535 해결: 인터페이스와 동일한 시그니처
+    // 프로젝트의 IDamageable 시그니처에 맞춤
     public void TakeDamage(int amount, Vector3 hitDir)
     {
         if (currentHP <= 0) return;
@@ -76,20 +76,25 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     void Die()
     {
+        // Enemy AI 쪽에 '죽음 상태' 알림 (이동/공격/충돌 정지 등)
         if (enemyAI) enemyAI.SetDeadState();
 
+        // 이 오브젝트의 충돌 비활성화
         foreach (var col in GetComponentsInChildren<Collider>())
             col.enabled = false;
 
+        // 죽음 애니
         if (anim && !string.IsNullOrEmpty(deadBool))
             anim.SetBool(deadBool, true);
 
+        // 물리 멈춤
         if (rb)
         {
             rb.velocity = Vector3.zero;
             rb.isKinematic = true;
         }
 
+        // 일정 시간 후 삭제
         if (destroyOnDeath)
             Destroy(gameObject, destroyDelay);
     }
