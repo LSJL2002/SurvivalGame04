@@ -16,6 +16,10 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public string hurtTrigger = "Hurt";
     public string deadBool = "Dead";
 
+    [Header("Knockback")]                    // ✅ 추가: 넉백 세팅
+    public float knockbackPower = 6f;
+    public float knockbackTime = 0.20f;
+
     int currentHP;
     Rigidbody rb;
     Animator anim;
@@ -52,8 +56,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         if (rend) StartCoroutine(FlashRed());
 
-        // ✅ 넉백은 Enemy에서만 처리 (중복 방지)
-        if (enemyAI) enemyAI.ApplyKnockback(hitDir);
+        // ✅ 넉백: 힘/지속시간을 같이 넘겨준다
+        if (enemyAI)
+        {
+            if (hitDir.sqrMagnitude > 0.0001f) hitDir.y = 0f;    // 수평만 유지 (선택)
+            enemyAI.ApplyKnockback(hitDir.normalized, knockbackPower, knockbackTime);
+        }
 
         if (anim && !string.IsNullOrEmpty(hurtTrigger))
             anim.SetTrigger(hurtTrigger);
