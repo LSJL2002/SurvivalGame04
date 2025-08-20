@@ -4,12 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 
-
-public interface IDamagable
-{
-    void TakePhysicalDamage(int damage);
-}
-public class PlayerCondition : MonoBehaviour, IDamagable
+public class PlayerCondition : MonoBehaviour, IDamageable
 {
     public UICondition uiCondition;
 
@@ -86,7 +81,7 @@ public class PlayerCondition : MonoBehaviour, IDamagable
         Debug.Log("플레이어가 죽었다.");
     }
 
-    public void TakePhysicalDamage(int damage)
+    public void TakeDamage(int damage, Vector3 dir)
     {
         health.Subtract(damage);
         onTakeDamage?.Invoke();

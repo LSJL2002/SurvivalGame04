@@ -44,7 +44,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
     }
 
-    // ⬇⬇ CS0535 해결: 인터페이스와 동일한 시그니처
+    // 무기에서 호출되는 데미지 처리
     public void TakeDamage(int amount, Vector3 hitDir)
     {
         if (currentHP <= 0) return;
@@ -52,6 +52,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP -= amount;
 
         if (rend) StartCoroutine(FlashRed());
+
+        // 🔥 Enemy.cs에 있는 Knockback 호출
+        if (enemyAI)
+        {
+            enemyAI.ApplyKnockback(hitDir);   // ← 무기 종류 상관없이 넉백!
+        }
 
         if (rb)
         {

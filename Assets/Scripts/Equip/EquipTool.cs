@@ -61,9 +61,10 @@ public class EquipTool : Equip
             {
                 resource.Gather(hit.point, hit.normal, this);
             }
-            if (doesDealDamage && hit.collider.TryGetComponent<IDamagable>(out IDamagable damagable))
+            if (doesDealDamage && hit.collider.TryGetComponent<IDamageable>(out IDamageable damagable))
             {
-                damagable.TakePhysicalDamage(damage);
+                Vector3 hitDir = (hit.point - transform.position).normalized;
+                damagable.TakeDamage(damage, hitDir);
             }
         }
     }

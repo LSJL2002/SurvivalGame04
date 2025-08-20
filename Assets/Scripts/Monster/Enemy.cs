@@ -1,235 +1,272 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent(typeof(Rigidbody))]
-[DefaultExecutionOrder(-100)] // EnemyHealth.Start()보다 먼저 동작(HP 세팅 선행)
 public class Enemy : MonoBehaviour
 {
-    public enum State { Idle, Chase, Attack, Dead }
-
     [Header("Target")]
-    public string targetTag = "Player";
-    public LayerMask targetMask;         // 공격 판정할 레이어(예: Player)
-    public Transform target;             // 비워두면 태그로 자동탐색
+    public string playerTag = "Player";
+    Transform player;
 
-    [Header("Enemy Type (1~5)")]
-    [Range(1, 5)] public int enemyType = 1;
-    [SerializeField] int[] hpByType = { 40, 60, 90, 120, 180 };
+    [Header("Senses / Ranges")]
+    public float detectionRange = 12f;
+    public float fieldOfView = 120f;
+    public LayerMask visionBlockMask = ~0;
 
-    [Header("Vision / Move")]
-    [SerializeField] float visionRange = 10f;  // 시야 거리
-    [SerializeField] float chaseSpeed = 3.0f;  // 타입별로 덮어씌움
-    [SerializeField] float stopDistance = 0.2f;
+    [Header("Move / Agent")]
+    public float walkSpeed = 2.0f;
+    public float runSpeed = 3.6f;
+    public float attackRange = 1.8f;
+    public float destRefreshTime = 0.15f; // 목적지 갱신 최소 주기
+    public float destRefreshDist = 0.3f;  // 목적지 변화 최소 거리
 
-    [Header("Attack")]
-    [SerializeField] int attackDamage = 10;    // 타입별로 덮어씌움
-    [SerializeField] float attackRange = 2.0f;
-    [SerializeField] float attackCooldown = 1.2f;
-    [SerializeField] float attackDelay = 0.3f;       // 애니 이벤트 안 쓸 때 타이밍
-    [SerializeField] bool useAnimationEvent = true;  // 애니 이벤트로 타격할지
-    [SerializeField] Transform attackPoint;          // 비워두면 전방 1m
+    [Header("Combat")]
+    public int attackDamage = 10;
+    public float attackCooldown = 1.2f;
+    public Transform attackPoint;       // 없으면 정면 1m
+    public float attackRadius = 0.8f;   // OverlapSphere 판정
+    public LayerMask playerMask;        // Player 레이어
 
-    [Header("Animator Params")]
-    public string speedFloat = "Speed";
+    [Header("Animator (optional)")]
+    public string movingBool = "IsMoving"; // 있으면 쓰고, 없어도 무방
     public string attackTrigger = "Attack";
-    public string deadBool = "Dead";
+    public string deadBool = "Dead";       // bool
+    // Animator에는 Speed(float) 파라미터가 있어야 함 (Idle↔Run 전이용)
 
-    Rigidbody rb;
+    [Header("Knockback (physics)")]
+    public float knockbackForce = 6f;       // 수평 힘
+    public float knockbackUpForce = 1.5f;   // 위로 약간
+    public float knockbackTime = 0.12f;     // 넉백 동안 추격 입력 잠시 중지
+
+    // ── internals ────────────────────────────────────────
+    NavMeshAgent agent;
     Animator anim;
-    EnemyHealth hp;
-    State state = State.Idle;
-    float atkTimer;
+    Rigidbody rb;
+    bool isDead;
+    bool canAttack = true;
+    bool isKnockback;
+    float destTimer;
+    Vector3 lastDest;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        agent = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
-        hp = GetComponent<EnemyHealth>();
-        ApplyEnemyType(); // 속도/공격력/HP 세팅
+        rb = GetComponent<Rigidbody>();
+        if (!agent) agent = gameObject.AddComponent<NavMeshAgent>();
+
+        // Agent는 경로만 계산. 이동은 우리가 Rigidbody로 한다.
+        agent.updateRotation = false;
+        agent.updatePosition = false;        // ★ 중요
+        agent.autoBraking = false;        // 추격 중 감속 OFF
+        agent.stoppingDistance = Mathf.Max(attackRange * 0.9f, 0.2f);
+        agent.speed = runSpeed;
+
+        // 물리 이동 사용(요청대로 키네마틱 OFF)
+        if (rb)
+        {
+            rb.isKinematic = false;          // ★ 중요
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.constraints = RigidbodyConstraints.FreezeRotation; // 넘어지는 것 방지
+        }
     }
 
     void Start()
     {
-        if (!target)
+        var p = GameObject.FindGameObjectWithTag(playerTag);
+        if (p) player = p.transform;
+
+        // 시작 위치 NavMesh로 스냅
+        if (!agent.isOnNavMesh)
         {
-            var go = GameObject.FindGameObjectWithTag(targetTag);
-            if (go) target = go.transform;
+            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
+                transform.position = hit.position;
         }
+
+        agent.Warp(transform.position); // 초기 동기화
     }
 
     void Update()
     {
-        if (state == State.Dead) return;
+        if (isDead || player == null) return;
 
-        if (atkTimer > 0f) atkTimer -= Time.deltaTime;
+        float dist = Vector3.Distance(transform.position, player.position);
+        destTimer += Time.deltaTime;
 
-        // 애니 속도 파라미터(댐핑)
+        // ── 애니메이션 파라미터 갱신
         if (anim)
         {
-            float planar = new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude;
-            anim.SetFloat(speedFloat, planar, 0.1f, Time.deltaTime);
+            // 이동 중 판단(경로 진행 중이거나 실제 속도가 조금이라도 있으면 true)
+            bool moving =
+                (agent.hasPath && agent.remainingDistance > agent.stoppingDistance + 0.05f)
+                || rb.velocity.sqrMagnitude > 0.05f;
+
+            if (!string.IsNullOrEmpty(movingBool)) anim.SetBool(movingBool, moving);
+
+            // ★ Speed(float) 갱신 → Animator 전이 조건: Idle→Run(>0.05), Run→Idle(<0.01) 추천
+            anim.SetFloat("Speed", rb.velocity.magnitude, 0.1f, Time.deltaTime);
         }
 
-        switch (state)
+        // ── 공격/추격 의사결정
+        if (dist <= attackRange && IsPlayerInFOVAndVisible())
         {
-            case State.Idle:
-                LookForTarget();
-                // 제자리 대기
-                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-                break;
-
-            case State.Chase:
-                Chase();
-                break;
-
-            case State.Attack:
-                rb.velocity = Vector3.zero;
-                break;
+            if (canAttack) StartCoroutine(Co_Attack());
         }
-
-        // 타겟 바라보기(수평 회전)
-        if (target)
+        else
         {
-            var look = target.position - transform.position; look.y = 0f;
-            if (look.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 10f);
-        }
-    }
-
-    void LookForTarget()
-    {
-        if (!target || Vector3.Distance(transform.position, target.position) > visionRange)
-            target = FindClosestByTag(targetTag);
-
-        if (!target) { state = State.Idle; return; }
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        state = (dist <= visionRange) ? State.Chase : State.Idle;
-    }
-
-    void Chase()
-    {
-        if (!target) { state = State.Idle; return; }
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        if (dist > visionRange * 1.25f) { state = State.Idle; return; }
-
-        if (dist <= attackRange && atkTimer <= 0f)
-        {
-            StartAttack();
-            return;
-        }
-
-        MoveTowards(target.position, chaseSpeed);
-    }
-
-    void MoveTowards(Vector3 goal, float speed)
-    {
-        Vector3 to = goal - transform.position; to.y = 0f;
-        if (to.magnitude <= stopDistance)
-        {
-            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-            return;
-        }
-
-        Vector3 dir = to.normalized;
-        rb.velocity = dir * speed + Vector3.up * rb.velocity.y; // 중력 유지
-    }
-
-    // ───── Attack core ─────
-    void StartAttack()
-    {
-        state = State.Attack;
-        rb.velocity = Vector3.zero;
-        atkTimer = attackCooldown;
-
-        if (anim) anim.SetTrigger(attackTrigger);
-
-        if (!useAnimationEvent)
-            StartCoroutine(AttackHitAfter(attackDelay));
-        // useAnimationEvent=true면 애니메이션 이벤트에서 AnimationAttackHit() 호출
-    }
-
-    IEnumerator AttackHitAfter(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        DoMeleeHit();
-        if (state != State.Dead) state = State.Chase;
-    }
-
-    // 애니메이션 이벤트용 (클립 타임라인에서 호출)
-    public void AnimationAttackHit()
-    {
-        if (state == State.Dead) return;
-        DoMeleeHit();
-    }
-
-    void DoMeleeHit()
-    {
-        Vector3 center = attackPoint
-            ? attackPoint.position
-            : (transform.position + transform.forward * 1.0f);
-
-        Collider[] hits = Physics.OverlapSphere(center, attackRange, targetMask);
-        foreach (var h in hits)
-        {
-            if (h.TryGetComponent<IDamageable>(out var dmg))
+            if (!isKnockback)
             {
-                Vector3 dirToTarget = (h.transform.position - transform.position).normalized;
-                dmg.TakeDamage(attackDamage, dirToTarget);
+                TrySetDestination(player.position);
+
+                // NavMesh 경로 기반 이동(물리)
+                Vector3 desired = agent.desiredVelocity; desired.y = 0f;
+
+                if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                    desired = Vector3.zero;
+
+                Vector3 step = desired.normalized * agent.speed * Time.deltaTime;
+                rb.MovePosition(rb.position + step);
             }
         }
-    }
-    // ───────────────────────
 
-    // EnemyHealth에서 사망 시 호출
+        FaceTowards();                 // 수평 회전
+        agent.nextPosition = rb.position; // 매 프레임 Agent와 동기화
+    }
+
+    // 목적지 과도 갱신 방지 + NavMesh 위로 스냅
+    void TrySetDestination(Vector3 target)
+    {
+        if (destTimer < destRefreshTime) return;
+
+        Vector3 want = target;
+        if (NavMesh.SamplePosition(target, out var hit, 1.0f, NavMesh.AllAreas))
+            want = hit.position;
+
+        if ((lastDest - want).sqrMagnitude < destRefreshDist * destRefreshDist) return;
+
+        agent.speed = runSpeed;
+        agent.SetDestination(want);
+        lastDest = want;
+        destTimer = 0f;
+    }
+
+    void FaceTowards()
+    {
+        Vector3 dir = rb.velocity.sqrMagnitude > 0.01f ? rb.velocity : (player.position - transform.position);
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        var want = Quaternion.LookRotation(dir.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * 10f);
+    }
+
+    bool IsPlayerInFOVAndVisible()
+    {
+        Vector3 to = player.position - transform.position; to.y = 0f;
+        if (Vector3.Angle(transform.forward, to) > fieldOfView * 0.5f) return false;
+
+        Vector3 eye = transform.position + Vector3.up * 1.6f;
+        Vector3 tgt = player.position + Vector3.up * 1.2f;
+        Vector3 dir = tgt - eye;
+
+        // 벽/지형에 막히면 false
+        if (Physics.Raycast(eye, dir.normalized, out var hit, dir.magnitude + 0.05f, visionBlockMask))
+            return hit.transform == player;
+
+        return true;
+    }
+
+    IEnumerator Co_Attack()
+    {
+        canAttack = false;
+        if (anim && !string.IsNullOrEmpty(attackTrigger)) anim.SetTrigger(attackTrigger);
+
+        // 타격 타이밍 맞춰 대기(필요 시 조정)
+        yield return new WaitForSeconds(0.35f);
+
+        if (!isDead && player != null)
+        {
+            bool inRange = Vector3.Distance(transform.position, player.position) <= attackRange + 0.05f;
+
+            bool overlapHit = false;
+            Vector3 center = attackPoint ? attackPoint.position
+                                         : (transform.position + transform.forward * 1.0f);
+
+            if (playerMask.value != 0)
+            {
+                var cols = Physics.OverlapSphere(center, attackRadius, playerMask);
+                foreach (var c in cols) { if (c.transform == player) { overlapHit = true; break; } }
+            }
+
+            if (inRange || overlapHit)
+            {
+                var dmg = player.GetComponent<IDamageable>();
+                if (dmg != null)
+                {
+                    Vector3 dir = (player.position - transform.position).normalized;
+                    dmg.TakeDamage(attackDamage, dir);
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(attackCooldown);
+        canAttack = true;
+    }
+
+    // ── 넉백 (모든 무기 공통) ─────────────────────────────
+    public void ApplyKnockback(Vector3 dir)
+    {
+        if (isDead || rb == null) return;
+        StopCoroutine(nameof(Co_Knockback));
+        StartCoroutine(Co_Knockback(dir));
+    }
+
+    IEnumerator Co_Knockback(Vector3 dir)
+    {
+        isKnockback = true;
+        rb.velocity = Vector3.zero;
+
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) dir = -transform.forward;
+        dir = dir.normalized;
+
+        Vector3 force = dir * knockbackForce + Vector3.up * knockbackUpForce;
+        rb.AddForce(force, ForceMode.Impulse);
+
+        yield return new WaitForSeconds(knockbackTime);
+
+        isKnockback = false;
+        agent.Warp(rb.position); // NavMesh와 재동기화
+    }
+
+    // EnemyHealth에서 호출
     public void SetDeadState()
     {
-        state = State.Dead;
-        rb.velocity = Vector3.zero;
-        if (anim) anim.SetBool(deadBool, true);
+        if (isDead) return;
+        isDead = true;
+
+        StopAllCoroutines();
+
+        if (anim && !string.IsNullOrEmpty(deadBool)) anim.SetBool(deadBool, true);
+
+        if (rb) rb.velocity = Vector3.zero;
+        foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
     }
 
-    void ApplyEnemyType()
+    public void Die()
     {
-        // 타입별 스탯
-        switch (enemyType)
-        {
-            case 1: chaseSpeed = 2.5f; attackDamage = 5; break;
-            case 2: chaseSpeed = 2.7f; attackDamage = 8; break;
-            case 3: chaseSpeed = 3.0f; attackDamage = 12; break;
-            case 4: chaseSpeed = 3.3f; attackDamage = 16; break;
-            case 5: chaseSpeed = 3.6f; attackDamage = 22; break;
-        }
-
-        if (hp)
-        {
-            int idx = Mathf.Clamp(enemyType - 1, 0, hpByType.Length - 1);
-            hp.SetMaxHP(hpByType[idx], true); // HP도 타입에 맞춰 자동 세팅
-        }
+        SetDeadState();
+        Destroy(gameObject, 2f);
     }
 
-    Transform FindClosestByTag(string tagName)
-    {
-        var objs = GameObject.FindGameObjectsWithTag(tagName);
-        Transform best = null; float bestDist = Mathf.Infinity; Vector3 p = transform.position;
-        foreach (var go in objs)
-        {
-            if (go == gameObject) continue;
-            float d = Vector3.Distance(go.transform.position, p);
-            if (d < bestDist) { bestDist = d; best = go.transform; }
-        }
-        return best;
-    }
-
+    // 디버그
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, visionRange);
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
 
         Gizmos.color = Color.red;
         Vector3 c = attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
-        Gizmos.DrawWireSphere(c, attackRange);
+        Gizmos.DrawWireSphere(c, attackRadius);
     }
 }
