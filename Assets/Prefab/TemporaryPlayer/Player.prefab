@@ -320,9 +320,10 @@ GameObject:
   - component: {fileID: 1518400402688337853}
   - component: {fileID: 8860014093819050101}
   - component: {fileID: 35973042351019830}
+  - component: {fileID: 8004388639840055287}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -633,6 +634,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   curEquip: {fileID: 0}
   equipParent: {fileID: 2859982813694922996}
+--- !u!114 &8004388639840055287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5653088591003292159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 899e44aaf832a6b4a811f46c7a696a58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiInventory: {fileID: 0}
+  placementLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  validMaterial: {fileID: 2100000, guid: 24c74658def48ed4aa407097ddf85118, type: 2}
+  invalidMaterial: {fileID: 2100000, guid: c53180fd4e7581943abd7fbb9daf4868, type: 2}
 --- !u!1 &8904492514882661494
 GameObject:
   m_ObjectHideFlags: 0
