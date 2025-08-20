@@ -1,18 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Resource : MonoBehaviour
 {
     public ItemData itemToGive;
     public int quantityPerHit = 1;
-    public int capacity;
+    public int capacity;                    // max capacity. can change in Inspector
+    public float respawnTime;
 
     public List<ToolType> allowedTools;
 
+    private int curCapacity;                // current capacity. use only in script
+    private bool isDepleted = false;        // check is it depleted
+
+    private Renderer childRenderer;
+    private Collider resourceCollider;
+
+    public void Start()
+    {
+        curCapacity = capacity;             // Initialize capacity value
+
+        childRenderer = GetComponentInChildren<Renderer>();
+        resourceCollider = GetComponent<Collider>();
+    }
+
     public void Gather(Vector3 hitPoint, Vector3 hitNormal, EquipTool usingTool)
     {
-        if (!allowedTools.Contains(usingTool.ToolType))
+        if (isDepleted || !allowedTools.Contains(usingTool.ToolType))
         {
             return;
         }
@@ -28,8 +44,29 @@ public class Resource : MonoBehaviour
 
         if (capacity <= 0)
         {
-            Destroy(gameObject);
+            Startrespawn();
         }
+    }
+
+    private void Startrespawn()
+    {
+        isDepleted = true;
+
+        childRenderer.enabled = false;
+        resourceCollider.enabled = false;
+
+        StartCoroutine(RespawnAfterTime());
+    }
+
+    private IEnumerator RespawnAfterTime()
+    {
+        yield return new WaitForSeconds(respawnTime);
+
+        curCapacity = capacity;
+        isDepleted = false;
+
+        childRenderer.enabled = true;
+        resourceCollider.enabled = true;
     }
 }
 
