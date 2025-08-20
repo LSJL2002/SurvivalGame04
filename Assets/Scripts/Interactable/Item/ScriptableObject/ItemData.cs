@@ -55,4 +55,7 @@ public class ItemData : ScriptableObject
     public GameObject equipPrefab;
     [Header("Boost Duration")]
     public int boostDuration;
+
+    [Header("Build")]
+    public GameObject buildPrefab;
 }
