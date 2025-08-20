@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class UIInventory : MonoBehaviour
 {
+    [SerializeField] public BuildingSystem buildingSystem;
     private enum ActiveMenu
     {
         None,
@@ -273,6 +274,10 @@ public class UIInventory : MonoBehaviour
 
             UpdateUI();
             UpdateHotbarDisplay();
+        }
+        else if (data.type == ItemType.Build)
+        {
+            buildingSystem.StartPlacing(data);
         }
     }
 
