@@ -60,28 +60,40 @@ public class UIHotbar : MonoBehaviour
         Debug.Log("SelectSlot called: " + index);
         if (index < 0 || index >= hotbarSlots.Length) return;
 
-        // Always unequip current equip
+        // Unequip current equip if any
         if (CharacterManager.Instance.Player.equip.curEquip != null)
         {
             CharacterManager.Instance.Player.equip.UnEquip();
             Debug.Log("Unequipped current item");
         }
 
-        // Update selection index
         selectedIndex = index;
 
         // Highlight only the selected slot
         for (int i = 0; i < hotbarSlots.Length; i++)
             hotbarSlots[i].outline.enabled = (i == selectedIndex);
 
-        // Equip the new slot's item if it's equipable
         ItemSlot newSlot = hotbarSlots[selectedIndex];
+
+        // Equip if equipable
         if (newSlot.item != null && newSlot.item.type == ItemType.Equipable)
         {
             CharacterManager.Instance.Player.equip.EquipNew(newSlot.item);
             Debug.Log("Equipped: " + newSlot.item.displayName);
         }
+
+        // Show build preview if it's a build item
+        if (newSlot.item != null && newSlot.item.type == ItemType.Build)
+        {
+            inventoryUI.buildingSystem.StartPlacing(newSlot.item);
+        }
+        else
+        {
+            // Turn off preview if not a build item
+            inventoryUI.buildingSystem.CancelPlacement();
+        }
     }
+
 
 
     private void UseSelectedItem()
