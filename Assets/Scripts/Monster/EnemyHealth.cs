@@ -10,7 +10,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public float destroyDelay = 3f;
 
     [Header("Hit Reaction")]
-    public float knockbackForce = 3f;
     public float flashDuration = 0.12f;
 
     [Header("Animation Params (optional)")]
@@ -44,7 +43,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
     }
 
-    // 무기에서 호출되는 데미지 처리
+    // 무기에서 호출
     public void TakeDamage(int amount, Vector3 hitDir)
     {
         if (currentHP <= 0) return;
@@ -53,17 +52,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         if (rend) StartCoroutine(FlashRed());
 
-        // 🔥 Enemy.cs에 있는 Knockback 호출
-        if (enemyAI)
-        {
-            enemyAI.ApplyKnockback(hitDir);   // ← 무기 종류 상관없이 넉백!
-        }
-
-        if (rb)
-        {
-            Vector3 force = hitDir.normalized * knockbackForce + Vector3.up * 0.3f;
-            rb.AddForce(force, ForceMode.Impulse);
-        }
+        // ✅ 넉백은 Enemy에서만 처리 (중복 방지)
+        if (enemyAI) enemyAI.ApplyKnockback(hitDir);
 
         if (anim && !string.IsNullOrEmpty(hurtTrigger))
             anim.SetTrigger(hurtTrigger);

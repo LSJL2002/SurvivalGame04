@@ -240,7 +240,7 @@ Transform:
   m_GameObject: {fileID: 1023741775639716375}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.143, z: 0}
+  m_LocalPosition: {x: -108.9612, y: 11.367618, z: 17.560455}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -282,29 +282,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTag: Player
-  detectionRange: 1.5
+  detectionRange: 5
   fieldOfView: 120
   visionBlockMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  walkSpeed: 2
-  runSpeed: 3.6
+  walkSpeed: 1
+  runSpeed: 1
   attackRange: 1
   destRefreshTime: 0.15
   destRefreshDist: 0.3
   attackDamage: 10
-  attackCooldown: 1.2
+  attackCooldown: 5
   attackPoint: {fileID: 0}
   attackRadius: 0.5
   playerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   movingBool: IsMoving
   attackTrigger: Attack
   deadBool: Dead
-  knockbackForce: 6
-  knockbackUpForce: 1.5
-  knockbackTime: 0.12
+  knockbackForce: 0.5
+  knockbackUpForce: 0.001
+  knockbackTime: 1
+  ignoreKnockbackWhileAttacking: 1
+  postAttackKnockbackGrace: 0.12
+  knockbackCooldown: 0.08
 --- !u!114 &5366585765589923553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,7 +323,6 @@ MonoBehaviour:
   maxHP: 50
   destroyOnDeath: 1
   destroyDelay: 3
-  knockbackForce: 3
   flashDuration: 0.12
   hurtTrigger: Hurt
   deadBool: Dead

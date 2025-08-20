@@ -17,26 +17,28 @@ public class Enemy : MonoBehaviour
     public float walkSpeed = 2.0f;
     public float runSpeed = 3.6f;
     public float attackRange = 1.8f;
-    public float destRefreshTime = 0.15f; // 목적지 갱신 최소 주기
-    public float destRefreshDist = 0.3f;  // 목적지 변화 최소 거리
+    public float destRefreshTime = 0.15f;
+    public float destRefreshDist = 0.3f;
 
     [Header("Combat")]
     public int attackDamage = 10;
-    public float attackCooldown = 1.2f;
-    public Transform attackPoint;       // 없으면 정면 1m
-    public float attackRadius = 0.8f;   // OverlapSphere 판정
-    public LayerMask playerMask;        // Player 레이어
+    public float attackCooldown = 1.2f;   // 다음 공격 가능까지 대기
+    public Transform attackPoint;
+    public float attackRadius = 0.8f;
+    public LayerMask playerMask;
 
     [Header("Animator (optional)")]
-    public string movingBool = "IsMoving"; // 있으면 쓰고, 없어도 무방
+    public string movingBool = "IsMoving";
     public string attackTrigger = "Attack";
-    public string deadBool = "Dead";       // bool
-    // Animator에는 Speed(float) 파라미터가 있어야 함 (Idle↔Run 전이용)
+    public string deadBool = "Dead";      // bool, Speed(float)는 파라미터에 존재해야 함
 
     [Header("Knockback (physics)")]
-    public float knockbackForce = 6f;       // 수평 힘
-    public float knockbackUpForce = 1.5f;   // 위로 약간
-    public float knockbackTime = 0.12f;     // 넉백 동안 추격 입력 잠시 중지
+    public float knockbackForce = 6f;
+    public float knockbackUpForce = 1.5f;
+    public float knockbackTime = 0.12f;              // 넉백 유지 시간
+    public bool ignoreKnockbackWhileAttacking = true;
+    public float postAttackKnockbackGrace = 0.12f;   // 공격 종료 직후 넉백 무시 시간
+    public float knockbackCooldown = 0.08f;          // 넉백 종료 직후 또 넉백 방지 쿨다운
 
     // ── internals ────────────────────────────────────────
     NavMeshAgent agent;
@@ -44,9 +46,14 @@ public class Enemy : MonoBehaviour
     Rigidbody rb;
     bool isDead;
     bool canAttack = true;
-    bool isKnockback;
+    bool isAttacking;          // 공격 잠금
+    bool isKnockback;          // 넉백 잠금
     float destTimer;
     Vector3 lastDest;
+
+    // 타임스탬프
+    float lastAttackEndTime = -999f;
+    float lastKnockbackTime = -999f;
 
     void Awake()
     {
@@ -55,19 +62,18 @@ public class Enemy : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         if (!agent) agent = gameObject.AddComponent<NavMeshAgent>();
 
-        // Agent는 경로만 계산. 이동은 우리가 Rigidbody로 한다.
+        // Agent는 경로만, 이동은 Rigidbody
         agent.updateRotation = false;
-        agent.updatePosition = false;        // ★ 중요
-        agent.autoBraking = false;        // 추격 중 감속 OFF
+        agent.updatePosition = false;
+        agent.autoBraking = false;
         agent.stoppingDistance = Mathf.Max(attackRange * 0.9f, 0.2f);
         agent.speed = runSpeed;
 
-        // 물리 이동 사용(요청대로 키네마틱 OFF)
         if (rb)
         {
-            rb.isKinematic = false;          // ★ 중요
+            rb.isKinematic = false;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
-            rb.constraints = RigidbodyConstraints.FreezeRotation; // 넘어지는 것 방지
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
 
@@ -76,14 +82,12 @@ public class Enemy : MonoBehaviour
         var p = GameObject.FindGameObjectWithTag(playerTag);
         if (p) player = p.transform;
 
-        // 시작 위치 NavMesh로 스냅
         if (!agent.isOnNavMesh)
         {
             if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
                 transform.position = hit.position;
         }
-
-        agent.Warp(transform.position); // 초기 동기화
+        agent.Warp(transform.position);
     }
 
     void Update()
@@ -93,47 +97,64 @@ public class Enemy : MonoBehaviour
         float dist = Vector3.Distance(transform.position, player.position);
         destTimer += Time.deltaTime;
 
-        // ── 애니메이션 파라미터 갱신
-        if (anim)
+        bool actionLocked = isAttacking || isKnockback;
+        float speedForAnim = 0f; // 애니메이터에 넣을 속도(의도 속도 기반)
+
+        if (actionLocked)
         {
-            // 이동 중 판단(경로 진행 중이거나 실제 속도가 조금이라도 있으면 true)
-            bool moving =
-                (agent.hasPath && agent.remainingDistance > agent.stoppingDistance + 0.05f)
-                || rb.velocity.sqrMagnitude > 0.05f;
+            // 공격 중에는 정지, 넉백 중엔 물리에 맡김
+            if (isAttacking) rb.velocity = Vector3.zero;
 
-            if (!string.IsNullOrEmpty(movingBool)) anim.SetBool(movingBool, moving);
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.nextPosition = rb.position;
+            FaceTowards();
 
-            // ★ Speed(float) 갱신 → Animator 전이 조건: Idle→Run(>0.05), Run→Idle(<0.01) 추천
-            anim.SetFloat("Speed", rb.velocity.magnitude, 0.1f, Time.deltaTime);
-        }
-
-        // ── 공격/추격 의사결정
-        if (dist <= attackRange && IsPlayerInFOVAndVisible())
-        {
-            if (canAttack) StartCoroutine(Co_Attack());
+            if (!isKnockback) speedForAnim = 0f; // 넉백 중엔 Speed를 강제로 0으로 만들지 않음
         }
         else
         {
-            if (!isKnockback)
+            // 추격/이동
+            if (dist > attackRange || !IsPlayerInFOVAndVisible())
             {
                 TrySetDestination(player.position);
 
-                // NavMesh 경로 기반 이동(물리)
-                Vector3 desired = agent.desiredVelocity; desired.y = 0f;
+                // 의도 속도 사용
+                Vector3 desired = agent.desiredVelocity;
+                desired.y = 0f;
 
+                // stoppingDistance 안이면 정지
                 if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
                     desired = Vector3.zero;
 
+                // 실제 이동은 Rigidbody로
                 Vector3 step = desired.normalized * agent.speed * Time.deltaTime;
                 rb.MovePosition(rb.position + step);
+
+                agent.isStopped = false;
+
+                // 애니메이터용 속도(데드존 포함)
+                speedForAnim = desired.magnitude;
             }
+
+            // 공격 시도
+            if (dist <= attackRange && IsPlayerInFOVAndVisible() && canAttack)
+                StartCoroutine(Co_Attack());
         }
 
-        FaceTowards();                 // 수평 회전
-        agent.nextPosition = rb.position; // 매 프레임 Agent와 동기화
+        // 애니 파라미터 갱신
+        if (anim)
+        {
+            if (speedForAnim < 0.03f) speedForAnim = 0f; // 미세 떨림 제거
+            anim.SetFloat("Speed", speedForAnim, 0.1f, Time.deltaTime);
+            if (!string.IsNullOrEmpty(movingBool))
+                anim.SetBool(movingBool, speedForAnim > 0f || isKnockback);
+        }
+
+        // 공통 동기화
+        agent.nextPosition = rb.position;
     }
 
-    // 목적지 과도 갱신 방지 + NavMesh 위로 스냅
     void TrySetDestination(Vector3 target)
     {
         if (destTimer < destRefreshTime) return;
@@ -152,7 +173,7 @@ public class Enemy : MonoBehaviour
 
     void FaceTowards()
     {
-        Vector3 dir = rb.velocity.sqrMagnitude > 0.01f ? rb.velocity : (player.position - transform.position);
+        Vector3 dir = (player ? (player.position - transform.position) : transform.forward);
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.0001f) return;
 
@@ -168,8 +189,6 @@ public class Enemy : MonoBehaviour
         Vector3 eye = transform.position + Vector3.up * 1.6f;
         Vector3 tgt = player.position + Vector3.up * 1.2f;
         Vector3 dir = tgt - eye;
-
-        // 벽/지형에 막히면 false
         if (Physics.Raycast(eye, dir.normalized, out var hit, dir.magnitude + 0.05f, visionBlockMask))
             return hit.transform == player;
 
@@ -178,10 +197,17 @@ public class Enemy : MonoBehaviour
 
     IEnumerator Co_Attack()
     {
+        // 공격 잠금 시작
+        isAttacking = true;
         canAttack = false;
+
+        rb.velocity = Vector3.zero; // 공격 모션 안정화
+        agent.isStopped = true;
+        agent.ResetPath();
+
         if (anim && !string.IsNullOrEmpty(attackTrigger)) anim.SetTrigger(attackTrigger);
 
-        // 타격 타이밍 맞춰 대기(필요 시 조정)
+        // 타격 타이밍까지 대기 (클립 타이밍에 맞춰 조절)
         yield return new WaitForSeconds(0.35f);
 
         if (!isDead && player != null)
@@ -209,34 +235,59 @@ public class Enemy : MonoBehaviour
             }
         }
 
+        // 공격 후딜
         yield return new WaitForSeconds(attackCooldown);
+
+        // 공격 종료 시각 기록 + 잠금 해제
+        lastAttackEndTime = Time.time;
+        isAttacking = false;
         canAttack = true;
+        agent.isStopped = false;
+        agent.Warp(rb.position); // 재동기화
     }
 
-    // ── 넉백 (모든 무기 공통) ─────────────────────────────
+    // ── 넉백(잠금 포함) ────────────────────────────────
     public void ApplyKnockback(Vector3 dir)
     {
         if (isDead || rb == null) return;
-        StopCoroutine(nameof(Co_Knockback));
+
+        // 1) 공격 중이면 무시
+        if (ignoreKnockbackWhileAttacking && isAttacking) return;
+
+        // 2) 공격 직후 그레이스 타임 동안 무시
+        if (Time.time - lastAttackEndTime < postAttackKnockbackGrace) return;
+
+        // 3) 이미 넉백 중이면 체인 차단(무시)
+        if (isKnockback) return;
+
+        // 4) 넉백 쿨다운(끝난 직후 연속 방지)
+        if (Time.time - lastKnockbackTime < knockbackCooldown) return;
+
+        // 기존 넉백을 덮어쓰지 않음(StopCoroutine X) → 체인 방지
         StartCoroutine(Co_Knockback(dir));
     }
 
     IEnumerator Co_Knockback(Vector3 dir)
     {
         isKnockback = true;
-        rb.velocity = Vector3.zero;
+        lastKnockbackTime = Time.time;
+
+        agent.isStopped = true;
+        agent.ResetPath();
 
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.0001f) dir = -transform.forward;
         dir = dir.normalized;
 
-        Vector3 force = dir * knockbackForce + Vector3.up * knockbackUpForce;
-        rb.AddForce(force, ForceMode.Impulse);
+        // 즉시 반응형 넉백
+        Vector3 vel = dir * knockbackForce + Vector3.up * knockbackUpForce;
+        rb.AddForce(vel, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(knockbackTime);
 
         isKnockback = false;
-        agent.Warp(rb.position); // NavMesh와 재동기화
+        agent.isStopped = false;
+        agent.Warp(rb.position);
     }
 
     // EnemyHealth에서 호출
@@ -246,11 +297,15 @@ public class Enemy : MonoBehaviour
         isDead = true;
 
         StopAllCoroutines();
+        isAttacking = false;
+        isKnockback = false;
 
         if (anim && !string.IsNullOrEmpty(deadBool)) anim.SetBool(deadBool, true);
 
-        if (rb) rb.velocity = Vector3.zero;
+        rb.velocity = Vector3.zero;
         foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+        agent.ResetPath();
+        agent.isStopped = true;
     }
 
     public void Die()
