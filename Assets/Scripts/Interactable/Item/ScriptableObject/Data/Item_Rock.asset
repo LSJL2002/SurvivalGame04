@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
   m_Name: Item_Rock
   m_EditorClassIdentifier: 
-  displayName: 
-  description: 
+  displayName: "\uBC14\uC704"
+  description: "\uBC14\uC704"
   type: 0
-  icon: {fileID: 0}
-  dropPrefab: {fileID: 0}
+  icon: {fileID: 21300000, guid: e61976ceaf6919c47853f5a7ea09288b, type: 3}
+  dropPrefab: {fileID: 5554103217500790444, guid: fc577d9cdce74774c80d5952edbbac6f, type: 3}
   attackDamage: 0
-  canStack: 0
-  maxStackAmount: 0
+  canStack: 1
+  maxStackAmount: 10
   consumables: []
   equipPrefab: {fileID: 0}
   boostDuration: 0
+  buildPrefab: {fileID: 0}
