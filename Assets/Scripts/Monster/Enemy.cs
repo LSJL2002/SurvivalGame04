@@ -20,6 +20,9 @@ public class Enemy : MonoBehaviour
     public float destRefreshTime = 0.15f;
     public float destRefreshDist = 0.3f;
 
+    [Header("Rotation")]
+    public float turnSpeed = 12f; // ← 회전 속도(초당 약 12 정도면 부드럽고 빠름)
+
     [Header("Combat")]
     public int attackDamage = 10;
     public float attackCooldown = 1.2f;   // 다음 공격 가능까지 대기
@@ -38,7 +41,7 @@ public class Enemy : MonoBehaviour
     public float knockbackTime = 0.12f;              // 넉백 유지 시간
     public bool ignoreKnockbackWhileAttacking = true;
     public float postAttackKnockbackGrace = 0.12f;   // 공격 종료 직후 넉백 무시 시간
-    public float knockbackCooldown = 0.08f;          // 넉백 종료 직후 또 넉백 방지 쿨다운
+    public float knockbackCooldown = 0.08f;          // 넉백 종료 직후 또 넉백 방지
 
     // ── internals ────────────────────────────────────────
     NavMeshAgent agent;
@@ -108,6 +111,8 @@ public class Enemy : MonoBehaviour
             agent.isStopped = true;
             agent.ResetPath();
             agent.nextPosition = rb.position;
+
+            // 잠금 상태에서는 플레이어 쪽을 바라보게 유지
             FaceTowards();
 
             if (!isKnockback) speedForAnim = 0f; // 넉백 중엔 Speed를 강제로 0으로 만들지 않음
@@ -133,13 +138,24 @@ public class Enemy : MonoBehaviour
 
                 agent.isStopped = false;
 
+                // ★ 이동 방향을 향하도록 회전
+                if (desired.sqrMagnitude > 0.0001f)
+                    RotateTowards(desired);
+                else
+                    FaceTowards(); // 목적지 거의 도달 시엔 플레이어 쪽을 보게
+
                 // 애니메이터용 속도(데드존 포함)
                 speedForAnim = desired.magnitude;
             }
+            else
+            {
+                // 공격 사거리 안이면 플레이어를 바라보게
+                FaceTowards();
 
-            // 공격 시도
-            if (dist <= attackRange && IsPlayerInFOVAndVisible() && canAttack)
-                StartCoroutine(Co_Attack());
+                // 공격 시도
+                if (IsPlayerInFOVAndVisible() && canAttack)
+                    StartCoroutine(Co_Attack());
+            }
         }
 
         // 애니 파라미터 갱신
@@ -171,14 +187,24 @@ public class Enemy : MonoBehaviour
         destTimer = 0f;
     }
 
-    void FaceTowards()
+    // 이동 방향으로 부드럽게 회전
+    void RotateTowards(Vector3 dir)
     {
-        Vector3 dir = (player ? (player.position - transform.position) : transform.forward);
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.0001f) return;
-
         var want = Quaternion.LookRotation(dir.normalized);
-        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * 10f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * turnSpeed);
+    }
+
+    // 플레이어 쪽을 보게 회전(공격/잠금 시 사용)
+    void FaceTowards()
+    {
+        if (!player) return;
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        var want = Quaternion.LookRotation(dir.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * turnSpeed);
     }
 
     bool IsPlayerInFOVAndVisible()
@@ -204,6 +230,9 @@ public class Enemy : MonoBehaviour
         rb.velocity = Vector3.zero; // 공격 모션 안정화
         agent.isStopped = true;
         agent.ResetPath();
+
+        // 공격 전에 확실히 타겟을 겨냥
+        FaceTowards();
 
         if (anim && !string.IsNullOrEmpty(attackTrigger)) anim.SetTrigger(attackTrigger);
 
@@ -251,19 +280,12 @@ public class Enemy : MonoBehaviour
     {
         if (isDead || rb == null) return;
 
-        // 1) 공격 중이면 무시
+        // 공격 중/직후, 또는 넉백 체인/쿨다운 차단
         if (ignoreKnockbackWhileAttacking && isAttacking) return;
-
-        // 2) 공격 직후 그레이스 타임 동안 무시
         if (Time.time - lastAttackEndTime < postAttackKnockbackGrace) return;
-
-        // 3) 이미 넉백 중이면 체인 차단(무시)
         if (isKnockback) return;
-
-        // 4) 넉백 쿨다운(끝난 직후 연속 방지)
         if (Time.time - lastKnockbackTime < knockbackCooldown) return;
 
-        // 기존 넉백을 덮어쓰지 않음(StopCoroutine X) → 체인 방지
         StartCoroutine(Co_Knockback(dir));
     }
 
