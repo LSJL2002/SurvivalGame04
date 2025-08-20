@@ -17330,7 +17330,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 11.367618
+      value: 11.386
       objectReference: {fileID: 0}
     - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
       propertyPath: m_LocalPosition.z
@@ -55003,6 +55003,7 @@ MonoBehaviour:
   itemToGive: {fileID: 11400000, guid: 5e725d9afb44d3446a0eac2bfbac0491, type: 2}
   quantityPerHit: 1
   capacity: 10
+  respawnTime: 0
   allowedTools: 00000000
 --- !u!1001 &2064875695
 PrefabInstance:
