@@ -298,31 +298,14 @@ GameObject:
   m_Component:
   - component: {fileID: 983190710}
   - component: {fileID: 983190709}
-  - component: {fileID: 983190708}
-  m_Layer: 10
+  - component: {fileID: 983190711}
+  m_Layer: 8
   m_Name: Building_BurgerStore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &983190708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 983190707}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemToGive: {fileID: 0}
-  quantityPerHit: 1
-  capacity: 0
-  respawnTime: 0
-  allowedTools: 
 --- !u!65 &983190709
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -342,8 +325,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.8951707, y: 5.8840995, z: 4.7538958}
-  m_Center: {x: 0.07063794, y: 1.5742142, z: 1.5338497}
+  m_Size: {x: 4.96891, y: 4.0915737, z: 4.6555758}
+  m_Center: {x: 5.995144, y: 0.7311144, z: 1.5562301}
 --- !u!4 &983190710
 Transform:
   m_ObjectHideFlags: 0
@@ -361,6 +344,22 @@ Transform:
   - {fileID: 6349635653409761455}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &983190711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983190707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: c1b758a0c7326b14db9c6cc65e71ae7c, type: 2}
+  quantityPerInteract: 1
+  capacity: 10
+  respawnTime: 5
 --- !u!1 &1047077807
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,31 +462,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1675948256}
   - component: {fileID: 1675948255}
-  - component: {fileID: 1675948254}
-  m_Layer: 10
+  - component: {fileID: 1675948257}
+  m_Layer: 8
   m_Name: Building_IcecreamStore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1675948254
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1675948253}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemToGive: {fileID: 0}
-  quantityPerHit: 1
-  capacity: 0
-  respawnTime: 0
-  allowedTools: 
 --- !u!65 &1675948255
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -526,6 +508,22 @@ Transform:
   - {fileID: 4027339675374773930}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1675948257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1675948253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: 62b9c79233daaf34798a8487e496371e, type: 2}
+  quantityPerInteract: 1
+  capacity: 10
+  respawnTime: 5
 --- !u!1 &124031234796557497
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,7 +535,7 @@ GameObject:
   - component: {fileID: 4027339675374773930}
   - component: {fileID: 5384328952947137692}
   - component: {fileID: 1838721870275813477}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BigIcecream
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -685,7 +683,7 @@ GameObject:
   - component: {fileID: 803601976220672129}
   - component: {fileID: 8538245460725357239}
   - component: {fileID: 2684559245380920910}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Store 1 a
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -703,7 +701,7 @@ GameObject:
   - component: {fileID: 8519820954684747817}
   - component: {fileID: 821760403400215071}
   - component: {fileID: 6366950576855267046}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Store 1 c
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -786,7 +784,7 @@ GameObject:
   - component: {fileID: 6349635653409761455}
   - component: {fileID: 2685668490092466841}
   - component: {fileID: 8537101033151671904}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BigBurger
   m_TagString: Untagged
   m_Icon: {fileID: 0}

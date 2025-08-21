@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3415087955402256481}
   - component: {fileID: 8507111351799975980}
-  - component: {fileID: 2699105581506018958}
+  - component: {fileID: 8526743597811953536}
   m_Layer: 10
   m_Name: Resource_Box
   m_TagString: Untagged
@@ -55,7 +55,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.13994116, y: 0.18057406, z: 0.1445407}
   m_Center: {x: 0.0005654134, y: -0.029055595, z: 0.0019154102}
---- !u!114 &2699105581506018958
+--- !u!114 &8526743597811953536
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -64,14 +64,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 4778267964435461242}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToGive: {fileID: 11400000, guid: 987cdc39785b92b428de67786170a855, type: 2}
-  quantityPerHit: 1
-  capacity: 1
-  respawnTime: 10
-  allowedTools: 02000000
+  item: {fileID: 11400000, guid: 987cdc39785b92b428de67786170a855, type: 2}
+  quantityPerInteract: 1
+  capacity: 5
+  respawnTime: 5
 --- !u!1 &6365488908219224889
 GameObject:
   m_ObjectHideFlags: 0
