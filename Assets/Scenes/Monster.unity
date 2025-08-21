@@ -217,6 +217,67 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1001 &968454109
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -108.9612
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11.386
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 17.560455
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1023741775639716375, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: m_Name
+      value: Zombie deform
+      objectReference: {fileID: 0}
+    - target: {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+      propertyPath: visualRoot
+      value: 
+      objectReference: {fileID: 395999094583851181, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
 --- !u!1 &1180916778
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,3 +376,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 1180916781}
   - {fileID: 185352755}
+  - {fileID: 968454109}

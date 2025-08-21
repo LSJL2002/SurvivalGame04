@@ -224,6 +224,7 @@ GameObject:
   - component: {fileID: 5820317343889404040}
   - component: {fileID: 8603050568703773786}
   - component: {fileID: 3687249323623075236}
+  - component: {fileID: 3287056792818809666}
   m_Layer: 7
   m_Name: Zombie deform
   m_TagString: Untagged
@@ -281,34 +282,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e08986090d5156847b254a337501436a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTag: Player
-  detectionRange: 5
-  fieldOfView: 120
-  visionBlockMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  walkSpeed: 1
-  runSpeed: 1
+  dayNight: {fileID: 0}
+  target: {fileID: 0}
+  sightRange: 12
   attackRange: 1
-  destRefreshTime: 0.15
-  destRefreshDist: 0.3
-  turnSpeed: 12
-  attackDamage: 10
+  repathInterval: 0.2
   attackCooldown: 5
-  attackPoint: {fileID: 0}
-  attackRadius: 0.5
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  movingBool: IsMoving
-  attackTrigger: Attack
-  deadBool: Dead
-  knockbackForce: 0.5
-  knockbackUpForce: 0.001
-  knockbackTime: 1
-  ignoreKnockbackWhileAttacking: 1
-  postAttackKnockbackGrace: 0.12
-  knockbackCooldown: 0.08
+  navSampleRadius: 3
+  autoWarpToNavMesh: 1
+  defaultKnockbackTime: 0.2
+  knockbackDrag: 8
+  despawnAfter: 5
 --- !u!114 &5366585765589923553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -327,6 +311,8 @@ MonoBehaviour:
   flashDuration: 0.12
   hurtTrigger: Hurt
   deadBool: Dead
+  knockbackPower: 6
+  knockbackTime: 0.2
 --- !u!54 &5820317343889404040
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -399,6 +385,24 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &3287056792818809666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023741775639716375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a3d5d4086fbbb46bb87e1616104e4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dayNight: {fileID: 0}
+  visualRoot: {fileID: 0}
+  renderers: []
+  colliders: []
+  componentsToToggle: []
+  autoCollectIfEmpty: 1
 --- !u!1 &1180250066209073323
 GameObject:
   m_ObjectHideFlags: 0
