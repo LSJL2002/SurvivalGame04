@@ -679,7 +679,7 @@ MonoBehaviour:
   dialoguePanel: {fileID: 3774193412831768758}
   nameText: {fileID: 5113799400511088794}
   dialogueText: {fileID: 5548262372873303571}
-  TypingSpeed: 0
+  TypingSpeed: 0.1
 --- !u!1 &432271496760334571
 GameObject:
   m_ObjectHideFlags: 0
