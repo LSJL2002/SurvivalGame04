@@ -403,6 +403,8 @@ MonoBehaviour:
   colliders: []
   componentsToToggle: []
   autoCollectIfEmpty: 1
+  debugOverride: 0
+  debugNight: 0
 --- !u!1 &1180250066209073323
 GameObject:
   m_ObjectHideFlags: 0

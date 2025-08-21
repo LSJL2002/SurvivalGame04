@@ -1,101 +1,71 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class NightOnlyEnemyToggle : MonoBehaviour
 {
-    [Tooltip("씬의 DayNightCycle. 비워두면 자동으로 찾음")]
-    public DayNightCycle dayNight;
+    public DayNightCycle dayNight;          // 씬의 DayNightCycle (인스펙터에 드래그 권장)
 
-    [Header("낮에는 끌(숨길) 비주얼 루트(자식 오브젝트). 비워두면 렌더러만 토글")]
-    public Transform visualRoot;
+    [Header("테스트용")]
+    public bool debugOverride = false;      // 체크하면 강제
+    public bool debugNight = false;         // true=밤, false=낮
 
-    [Header("토글 대상(비워두면 자동 수집)")]
-    public Renderer[] renderers;
-    public Collider[] colliders;
-    public Behaviour[] componentsToToggle; // ⚠️ NavMeshAgent는 넣지 말 것!
-
-    public bool autoCollectIfEmpty = true;
-
-    private bool lastNight = false;
-    private NavMeshAgent agent;
+    // 한 번만 모아두고, 매 프레임 강제로 on/off
+    List<Renderer> renderers = new List<Renderer>();
+    List<Collider> colliders = new List<Collider>();
+    List<Animator> animators = new List<Animator>();
+    NavMeshAgent agent;
+    bool lastNight;
 
     void Awake()
     {
         if (dayNight == null) dayNight = FindObjectOfType<DayNightCycle>();
         agent = GetComponent<NavMeshAgent>();
 
-        if (autoCollectIfEmpty)
-        {
-            if (renderers == null || renderers.Length == 0)
-                renderers = GetComponentsInChildren<Renderer>(true);
-
-            if (colliders == null || colliders.Length == 0)
-                colliders = GetComponentsInChildren<Collider>(true);
-        }
-    }
-
-    void Start()
-    {
-        Apply(dayNight != null && dayNight.isNight);
+        // Enemy 루트 전체에서 시각/충돌/애니메이터를 한 번만 수집
+        renderers.AddRange(GetComponentsInChildren<Renderer>(true));
+        colliders.AddRange(GetComponentsInChildren<Collider>(true));
+        animators.AddRange(GetComponentsInChildren<Animator>(true));
     }
 
     void Update()
     {
-        if (dayNight == null) return;
-        if (lastNight != dayNight.isNight)
-            Apply(dayNight.isNight);
-    }
+        if (dayNight == null && !debugOverride) return;
 
-    void Apply(bool night)
-    {
-        lastNight = night;
+        bool night = dayNight ? dayNight.isNight : false;
+        if (debugOverride) night = debugNight;
 
-        // 비주얼 토글
-        if (visualRoot != null)
+        // 밤/낮 상태가 바뀔 때만 로그
+        if (lastNight != night)
         {
-            if (visualRoot.gameObject.activeSelf != night)
-                visualRoot.gameObject.SetActive(night);
-        }
-        else
-        {
-            if (renderers != null)
-                foreach (var r in renderers) if (r) r.enabled = night;
+            lastNight = night;
+            Debug.Log($"[NightToggle] {name} night={night}");
         }
 
-        // 콜라이더/기타 스크립트 토글 (Agent 제외!)
-        if (colliders != null)
-            foreach (var c in colliders) if (c) c.enabled = night;
+        // ✅ 매 프레임 강제 동기화: 밤이면 전부 켜기, 낮이면 전부 끄기
+        foreach (var r in renderers) if (r) r.enabled = night;
+        foreach (var c in colliders) if (c) c.enabled = night;
+        foreach (var a in animators) if (a) a.enabled = night;
 
-        if (componentsToToggle != null)
-            foreach (var b in componentsToToggle) if (b) b.enabled = night;
-
-        // NavMeshAgent는 컴포넌트 비활성화 X, isStopped로만 제어
+        // NavMeshAgent는 enable/disable 하지 않고 isStopped만 제어
         if (agent)
         {
-            if (!night)
+            if (!agent.enabled) agent.enabled = true;
+
+            if (night)
             {
-                if (agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
+                // 밤: NavMesh 위로 보정 + 이동 허용
+                if (!agent.isOnNavMesh &&
+                    NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
+                    agent.Warp(hit.position);
+
+                agent.isStopped = false;
             }
             else
             {
-                EnsureOnNavMesh(agent);    // 밤에 켤 때 NavMesh에 얹어놓기
-                if (agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
+                // 낮: 정지
+                agent.isStopped = true;
             }
-        }
-    }
-
-    void EnsureOnNavMesh(NavMeshAgent a)
-    {
-        if (!a.enabled) a.enabled = true;
-
-        // NavMesh에 없으면 근처 위치 샘플 후 워프
-        if (!a.isOnNavMesh)
-        {
-            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-            {
-                a.Warp(hit.position);  // Warp는 NavMesh 밖에서도 호출 가능
-            }
-            // 근처에 NavMesh가 전혀 없으면(샘플 실패) -> 에이전트는 일단 멈춰있게 둠
         }
     }
 }
