@@ -224,7 +224,6 @@ GameObject:
   - component: {fileID: 5820317343889404040}
   - component: {fileID: 8603050568703773786}
   - component: {fileID: 3687249323623075236}
-  - component: {fileID: 3287056792818809666}
   m_Layer: 7
   m_Name: Zombie deform
   m_TagString: Untagged
@@ -284,10 +283,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dayNight: {fileID: 0}
   target: {fileID: 0}
+  damage: 10
   sightRange: 12
   attackRange: 1
   repathInterval: 0.2
   attackCooldown: 5
+  attackTrigger: Attack
+  attackLockDuration: 2
   navSampleRadius: 3
   autoWarpToNavMesh: 1
   defaultKnockbackTime: 0.2
@@ -373,7 +375,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.001
-  m_Speed: 3.5
+  m_Speed: 1
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 200
@@ -385,26 +387,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &3287056792818809666
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1023741775639716375}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0a3d5d4086fbbb46bb87e1616104e4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dayNight: {fileID: 0}
-  monsterPrefab: {fileID: 0}
-  spawnCount: 5
-  spawnRadius: 50
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  minSpawnHeight: 1
 --- !u!1 &1180250066209073323
 GameObject:
   m_ObjectHideFlags: 0

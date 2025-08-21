@@ -20616,28 +20616,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: Zombie deform
       objectReference: {fileID: 0}
-    - target: {fileID: 1023741775639716375, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: dayNight
-      value: 
-      objectReference: {fileID: 1578510138}
-    - target: {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: debugNight
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: visualRoot
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
-      propertyPath: debugOverride
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3287056792818809666, guid: 04abf07c650bb9149aa61308c1905769, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
