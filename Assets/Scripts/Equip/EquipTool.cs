@@ -57,7 +57,10 @@ public class EquipTool : Equip
 
         if (Physics.Raycast(ray, out hit, attackDistance))
         {
-            if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
+            Transform hitTransform = hit.collider.transform;
+
+            // Check parent as well in case the script is not on the collider directly
+            if (doesGatherResources && hitTransform.GetComponentInParent<Resource>() is Resource resource)
             {
                 resource.Gather(hit.point, hit.normal, this);
             }
