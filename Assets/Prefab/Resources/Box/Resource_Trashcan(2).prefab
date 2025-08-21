@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2884723947062315733}
   - component: {fileID: 7474153764701695541}
-  - component: {fileID: 2385789699174502659}
+  - component: {fileID: 383173481172404211}
   m_Layer: 10
   m_Name: Resource_Trashcan(2)
   m_TagString: Untagged
@@ -55,7 +55,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.15949008, y: 0.39063022, z: 0.16549373}
   m_Center: {x: 0.009005383, y: -0.028517291, z: -0.0030018091}
---- !u!114 &2385789699174502659
+--- !u!114 &383173481172404211
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -64,14 +64,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6727320018450351914}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToGive: {fileID: 11400000, guid: 1014647aa4664104e8a5fe27f4c24378, type: 2}
-  quantityPerHit: 1
+  item: {fileID: 11400000, guid: 80f322cfe16b1104c8a2a71e448a18f3, type: 2}
+  quantityPerInteract: 1
   capacity: 5
-  respawnTime: 10
-  allowedTools: 
+  respawnTime: 5
 --- !u!1 &7187436322313268677
 GameObject:
   m_ObjectHideFlags: 0
