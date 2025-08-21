@@ -14,7 +14,6 @@ public class Enemy : MonoBehaviour
     public LayerMask visionBlockMask = ~0;
 
     [Header("Move / Agent")]
-    public float walkSpeed = 2.0f;
     public float runSpeed = 3.6f;
     public float attackRange = 1.8f;
     public float destRefreshTime = 0.15f;
@@ -43,7 +42,11 @@ public class Enemy : MonoBehaviour
     public float postAttackKnockbackGrace = 0.12f;
     public float knockbackCooldown = 0.08f;
 
-    // ── internals ────────────────────────────────────────
+    [Header("NavMesh Safety")]
+    public float navSampleRadius = 2.0f;      // NavMesh.SamplePosition 반경
+    public float navReacquireInterval = 0.2f; // NavMesh 재탐색 주기
+
+    // internals
     NavMeshAgent agent;
     Animator anim;
     Rigidbody rb;
@@ -56,6 +59,7 @@ public class Enemy : MonoBehaviour
 
     float lastAttackEndTime = -999f;
     float lastKnockbackTime = -999f;
+    float lastNavCheck;
 
     void Awake()
     {
@@ -83,17 +87,22 @@ public class Enemy : MonoBehaviour
         var p = GameObject.FindGameObjectWithTag(playerTag);
         if (p) player = p.transform;
 
-        if (!agent.isOnNavMesh)
-        {
-            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-                transform.position = hit.position;
-        }
-        agent.Warp(transform.position);
+        // 최초 NavMesh 정착
+        EnsureAgentOnNavMesh(forceSnap: true);
+        SafeWarp(rb.position);
     }
 
     void Update()
     {
         if (isDead || player == null) return;
+
+        // 매 프레임 NavMesh 상태 확인 & 필요시 복구
+        if (!EnsureAgentOnNavMesh())
+        {
+            // NavMesh를 못 찾는 동안은 agent API를 쓰지 않는다
+            if (anim) anim.SetFloat(speedFloat, 0f, 0.1f, Time.deltaTime);
+            return;
+        }
 
         float dist = Vector3.Distance(transform.position, player.position);
         destTimer += Time.deltaTime;
@@ -105,31 +114,36 @@ public class Enemy : MonoBehaviour
         {
             if (isAttacking) rb.velocity = Vector3.zero;
 
-            agent.isStopped = true;
+            SafeStopAgent(true);            // agent.isStopped = true (안전)
             agent.ResetPath();
             agent.nextPosition = rb.position;
 
             FaceTowards();
-            speedForAnim = 0f; // 잠금 시 이동 없음
+            speedForAnim = 0f;
         }
         else
         {
+            // 시야 밖이거나 사거리 밖이면 추격
             if (dist > attackRange || !IsPlayerInFOVAndVisible())
             {
                 TrySetDestination(player.position);
 
+                // 의도 속도
                 Vector3 desired = agent.desiredVelocity; desired.y = 0f;
 
-                if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                // 거의 도달했다면 정지
+                if (SafeRemainingDistance() <= agent.stoppingDistance + 0.05f)
                     desired = Vector3.zero;
 
+                // 이동
                 Vector3 step = desired.sqrMagnitude > 0.0001f
                     ? desired.normalized * agent.speed * Time.deltaTime
                     : Vector3.zero;
 
                 rb.MovePosition(rb.position + step);
-                agent.isStopped = false;
+                SafeStopAgent(false);        // agent.isStopped = false (안전)
 
+                // 회전
                 if (desired.sqrMagnitude > 0.0001f) RotateTowards(desired);
 
                 speedForAnim = desired.magnitude;
@@ -142,19 +156,73 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        // Animator: Speed(float)만 사용
+        // Animator
         if (anim)
         {
-            if (speedForAnim < 0.03f) speedForAnim = 0f; // dead zone
+            if (speedForAnim < 0.03f) speedForAnim = 0f;
             anim.SetFloat(speedFloat, speedForAnim, 0.1f, Time.deltaTime);
         }
 
+        // 동기화
         agent.nextPosition = rb.position;
     }
+
+    // ---------- NavMesh 안전 유틸 ----------
+
+    // true를 반환해야 agent API 호출해도 안전
+    bool EnsureAgentOnNavMesh(bool forceSnap = false)
+    {
+        if (agent == null) return false;
+
+        // 비활성이라면 활성화
+        if (!agent.enabled) agent.enabled = true;
+
+        // 이미 OnNavMesh면 OK
+        if (agent.isOnNavMesh) return true;
+
+        // 너무 자주 시도하지 않기
+        if (!forceSnap && Time.time - lastNavCheck < navReacquireInterval) return false;
+        lastNavCheck = Time.time;
+
+        // 현재 위치 근방에서 NavMesh 스냅 시도
+        if (NavMesh.SamplePosition(rb ? rb.position : transform.position, out var hit, navSampleRadius, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);           // 안전: 샘플 좌표로만 Warp
+            return true;
+        }
+
+        return false; // 아직 못 올림
+    }
+
+    // Warp 하기 전 반드시 NavMesh.SamplePosition으로 검사
+    void SafeWarp(Vector3 worldPos)
+    {
+        if (agent == null) return;
+        if (NavMesh.SamplePosition(worldPos, out var hit, navSampleRadius, NavMesh.AllAreas))
+            agent.Warp(hit.position);
+        // 못 찾으면 다음 프레임 EnsureAgentOnNavMesh가 다시 시도
+    }
+
+    // agent.isStopped 세터 안전 래퍼 (NavMesh 위일 때만)
+    void SafeStopAgent(bool stop)
+    {
+        if (agent && agent.enabled && agent.isOnNavMesh)
+            agent.isStopped = stop;
+    }
+
+    // remainingDistance 읽기 안전 래퍼
+    float SafeRemainingDistance()
+    {
+        if (agent && agent.enabled && agent.isOnNavMesh) return agent.remainingDistance;
+        return Mathf.Infinity;
+    }
+
+    // ---------- 나머지 로직 ----------
 
     void TrySetDestination(Vector3 target)
     {
         if (destTimer < destRefreshTime) return;
+        if (!agent || !agent.enabled || !agent.isOnNavMesh) return;
 
         Vector3 want = target;
         if (NavMesh.SamplePosition(target, out var hit, 1.0f, NavMesh.AllAreas))
@@ -204,7 +272,7 @@ public class Enemy : MonoBehaviour
         canAttack = false;
 
         rb.velocity = Vector3.zero;
-        agent.isStopped = true;
+        SafeStopAgent(true);
         agent.ResetPath();
         FaceTowards();
 
@@ -242,11 +310,12 @@ public class Enemy : MonoBehaviour
         lastAttackEndTime = Time.time;
         isAttacking = false;
         canAttack = true;
-        agent.isStopped = false;
-        agent.Warp(rb.position);
+
+        // 넉백 등으로 NavMesh에서 벗어났을 수 있으니 복귀 시도
+        EnsureAgentOnNavMesh(forceSnap: true);
+        SafeStopAgent(false);
     }
 
-    // ── Knockback ────────────────────────────────────────
     public void ApplyKnockback(Vector3 dir, float force, float duration)
     {
         if (isDead || rb == null) return;
@@ -271,13 +340,13 @@ public class Enemy : MonoBehaviour
 
     IEnumerator Co_KnockbackCustom(Vector3 dir, float force, float duration)
     {
-        float prevForce = knockbackForce;
-        float prevTime = knockbackTime;
+        float pf = knockbackForce;
+        float pt = knockbackTime;
         knockbackForce = force;
         knockbackTime = duration;
         yield return StartCoroutine(Co_Knockback(dir));
-        knockbackForce = prevForce;
-        knockbackTime = prevTime;
+        knockbackForce = pf;
+        knockbackTime = pt;
     }
 
     IEnumerator Co_Knockback(Vector3 dir)
@@ -285,7 +354,7 @@ public class Enemy : MonoBehaviour
         isKnockback = true;
         lastKnockbackTime = Time.time;
 
-        agent.isStopped = true;
+        SafeStopAgent(true);
         agent.ResetPath();
 
         dir.y = 0f;
@@ -298,8 +367,11 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(knockbackTime);
 
         isKnockback = false;
-        agent.isStopped = false;
-        agent.Warp(rb.position);
+
+        // 넉백으로 NavMesh에서 벗어났을 수 있으므로 스냅 후 재시작
+        EnsureAgentOnNavMesh(forceSnap: true);
+        SafeWarp(rb.position);
+        SafeStopAgent(false);
     }
 
     public void SetDeadState()
@@ -316,8 +388,11 @@ public class Enemy : MonoBehaviour
         rb.velocity = Vector3.zero;
         foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
 
-        agent.ResetPath();
-        agent.isStopped = true;
+        if (agent)
+        {
+            agent.ResetPath();
+            SafeStopAgent(true);
+        }
     }
 
     public void Die()
