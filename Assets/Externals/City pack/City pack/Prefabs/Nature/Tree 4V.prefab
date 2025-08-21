@@ -65,6 +65,7 @@ GameObject:
   - component: {fileID: 1808355894132968476}
   - component: {fileID: 5342425232354078949}
   - component: {fileID: 8438512409630578947}
+  - component: {fileID: -3353646352221066635}
   m_Layer: 0
   m_Name: Tree 4V
   m_TagString: Untagged
@@ -159,3 +160,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.0023269646, y: 0.025663003, z: 0.0020640178}
   m_Center: {x: 0.000080337224, y: -0.0019401312, z: 0.00008548461}
+--- !u!114 &-3353646352221066635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5915704048113042489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemToGive: {fileID: 11400000, guid: 48acfe93b3edc944baef72d150542d70, type: 2}
+  quantityPerHit: 1
+  capacity: 10
+  respawnTime: 100
+  allowedTools: 01000000

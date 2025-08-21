@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2705910734418109588}
   - component: {fileID: 8552856941320444013}
   - component: {fileID: 1033607893572389515}
+  - component: {fileID: -6540424055844302298}
   m_Layer: 0
   m_Name: Tree 2V
   m_TagString: Untagged
@@ -105,3 +106,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.0012029266, y: 0.025048427, z: 0.0022000882}
   m_Center: {x: -0.00021907807, y: 0.0028942048, z: -0.00023198579}
+--- !u!114 &-6540424055844302298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7966036639140129969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemToGive: {fileID: 11400000, guid: 48acfe93b3edc944baef72d150542d70, type: 2}
+  quantityPerHit: 1
+  capacity: 10
+  respawnTime: 100
+  allowedTools: 01000000

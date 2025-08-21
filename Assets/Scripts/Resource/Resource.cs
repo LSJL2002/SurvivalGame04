@@ -12,6 +12,7 @@ public class Resource : MonoBehaviour
 
     public List<ToolType> allowedTools;
 
+    private int originalCapacity;
     private int curCapacity;                // current capacity. use only in script
     private bool isDepleted = false;        // check is it depleted
 
@@ -20,6 +21,7 @@ public class Resource : MonoBehaviour
 
     public void Start()
     {
+        originalCapacity = capacity;
         curCapacity = capacity;             // Initialize capacity value
 
         childRenderer = GetComponentInChildren<Renderer>();
@@ -62,6 +64,7 @@ public class Resource : MonoBehaviour
     {
         yield return new WaitForSeconds(respawnTime);
 
+        capacity = originalCapacity;
         curCapacity = capacity;
         isDepleted = false;
 
