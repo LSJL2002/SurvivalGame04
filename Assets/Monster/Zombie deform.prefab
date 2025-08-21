@@ -335,7 +335,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
@@ -398,13 +398,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dayNight: {fileID: 0}
-  visualRoot: {fileID: 0}
-  renderers: []
-  colliders: []
-  componentsToToggle: []
-  autoCollectIfEmpty: 1
-  debugOverride: 0
-  debugNight: 0
+  monsterPrefab: {fileID: 0}
+  spawnCount: 5
+  spawnRadius: 50
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  minSpawnHeight: 1
 --- !u!1 &1180250066209073323
 GameObject:
   m_ObjectHideFlags: 0

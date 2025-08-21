@@ -8,17 +8,32 @@ public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
 
+    [Header("Typing Elements")]
     public GameObject dialoguePanel;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI dialogueText;
 
+    [Header("Typing Effect")]
+    public float TypingSpeed;
+
     private string[] dialogues;
     private int currentIndex;
+    private bool isTyping = false;
+    private string currentFullText = "";
+    private Coroutine typingCoroutine;
 
     void Awake()
     {
         Instance = this;
         dialoguePanel.SetActive(false);
+    }
+
+    void Update()
+    {
+        if (dialoguePanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
+        {
+            ShowNextDialogue();
+        }
     }
 
     public void StartDialogue(string npcName, string[] lines)
@@ -33,9 +48,16 @@ public class DialogueManager : MonoBehaviour
 
     public void ShowNextDialogue()
     {
+        if (isTyping)
+        {
+            CompleteTyping();
+            return;
+        }
+
         if (currentIndex < dialogues.Length)
         {
-            dialogueText.text = dialogues[currentIndex];   // ���� ��� ���
+            currentFullText = dialogues[currentIndex];   // ���� ��� ���
+            typingCoroutine = StartCoroutine(TypeText(currentFullText));
             currentIndex++;
         }
         else
@@ -46,15 +68,41 @@ public class DialogueManager : MonoBehaviour
 
     public void EndDialogue()
     {
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+
+        isTyping = false;
         dialoguePanel.SetActive(false);
         Time.timeScale = 1f;
     }
 
-    void Update()
+    private IEnumerator TypeText(string TextToType)                 // 한 글자씩 출력하게 하는 코루틴
     {
-        if (dialoguePanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
+        isTyping = true;
+        dialogueText.text = "";
+
+        for (int i = 0; i < TextToType.Length; i++)
         {
-            ShowNextDialogue();
+            dialogueText.text += TextToType[i];
+            yield return new WaitForSecondsRealtime(TypingSpeed);
         }
+
+        isTyping = false;
+        typingCoroutine = null;
+    }
+
+    public void CompleteTyping()
+    {
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+
+        dialogueText.text = currentFullText;
+        isTyping = false;
     }
 }

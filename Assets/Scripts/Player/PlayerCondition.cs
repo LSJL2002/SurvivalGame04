@@ -22,10 +22,15 @@ public class PlayerCondition : MonoBehaviour, IDamageable
         thirst.Subtract(thirst.passiveValue * Time.deltaTime);
         hunger.Subtract(hunger.passiveValue * Time.deltaTime);
 
-        if (health.curValue < 0f)
+        if (hunger.curValue == 0 || thirst.curValue == 0)
         {
-            Die();
+            health.Subtract(5 * Time.deltaTime);
         }
+
+        if (health.curValue < 0f)
+            {
+                Die();
+            }
     }
 
     public void Heal(float amount)
@@ -48,36 +53,9 @@ public class PlayerCondition : MonoBehaviour, IDamageable
         thirst.Add(amount);
     }
 
-    // public void Boost(Func<float> getter, Action<float> setter, float multiplier, float duration, BoostType boostType)
-    // {
-    //     StartCoroutine(BoostStats(getter, setter, multiplier, duration, boostType));
-    // }
-
-    // private IEnumerator BoostStats(Func<float> getter, Action<float> setter, float multiplier, float duration, BoostType boostType)
-    // {
-    //     if (boostType == BoostType.Stamina)
-    //     {
-    //         isInfiniteStamina = true;
-    //     }
-    //     else
-    //     {
-    //         float originalValue = getter();  // Save original value here
-    //         setter(originalValue * multiplier);
-
-    //         yield return new WaitForSeconds(duration);
-
-    //         setter(originalValue);  // Restore original value here
-    //     }
-
-    //     if (boostType == BoostType.Stamina)
-    //     {
-    //         yield return new WaitForSeconds(duration); //Set the bool of isInfinite Stamina for a duration amount of time.
-    //         isInfiniteStamina = false;
-    //     }
-    // }
-
     public void Die()
     {
+        Time.timeScale = 0f;
         Debug.Log("플레이어가 죽었다.");
     }
 

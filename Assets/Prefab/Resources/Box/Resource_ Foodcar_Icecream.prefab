@@ -93,7 +93,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8150049718533090010}
   - component: {fileID: 5140784074690294719}
-  - component: {fileID: 6450190309182879033}
+  - component: {fileID: 837905385924222896}
   m_Layer: 10
   m_Name: Resource_ Foodcar_Icecream
   m_TagString: Untagged
@@ -138,7 +138,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.40007314, y: 0.77363133, z: 0.2989595}
   m_Center: {x: -0.013970926, y: 0.11318433, z: -0.0066856146}
---- !u!114 &6450190309182879033
+--- !u!114 &837905385924222896
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,11 +147,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5474486086741733613}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToGive: {fileID: 11400000, guid: 62b9c79233daaf34798a8487e496371e, type: 2}
-  quantityPerHit: 1
+  item: {fileID: 11400000, guid: 62b9c79233daaf34798a8487e496371e, type: 2}
+  quantityPerInteract: 1
   capacity: 10
-  respawnTime: 10
-  allowedTools: 02000000
+  respawnTime: 5
