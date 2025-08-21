@@ -16,11 +16,13 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public string hurtTrigger = "Hurt";
     public string deadBool = "Dead";
 
-    [Header("Knockback")]                    // ✅ 추가: 넉백 세팅
+    [Header("Knockback")]
     public float knockbackPower = 6f;
     public float knockbackTime = 0.20f;
 
     int currentHP;
+    bool isDead;
+
     Rigidbody rb;
     Animator anim;
     Renderer rend;
@@ -29,41 +31,59 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        TryGetComponent(out rb);
         anim = GetComponentInChildren<Animator>();
         rend = GetComponentInChildren<Renderer>();
         enemyAI = GetComponent<Enemy>();
-        if (rend) originalColor = rend.material.color;
+
+        if (rend != null)
+        {
+            // material 인스턴스 한번만 잡아둠
+            originalColor = rend.material.color;
+        }
     }
 
     void Start()
     {
-        currentHP = maxHP;
+        currentHP = Mathf.Max(1, maxHP);
+        isDead = false;
     }
 
     public void SetMaxHP(int newMax, bool fill = true)
     {
-        maxHP = newMax;
-        currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
+        maxHP = Mathf.Max(1, newMax);
+        currentHP = fill ? maxHP : Mathf.Clamp(currentHP, 0, maxHP);
+    }
+
+    // IDamageable 호환: 방향 없는 경우(필요 시)
+    public void TakeDamage(int amount)
+    {
+        TakeDamage(amount, Vector3.zero);
     }
 
     // 무기에서 호출
     public void TakeDamage(int amount, Vector3 hitDir)
     {
-        if (currentHP <= 0) return;
+        if (isDead) return;
 
-        currentHP -= amount;
+        int dmg = Mathf.Max(0, amount);
+        if (dmg <= 0) return;
 
-        if (rend) StartCoroutine(FlashRed());
+        currentHP -= dmg;
 
-        // ✅ 넉백: 힘/지속시간을 같이 넘겨준다
-        if (enemyAI)
+        if (rend != null) StartCoroutine(FlashRed());
+
+        // 넉백
+        if (enemyAI != null)
         {
-            if (hitDir.sqrMagnitude > 0.0001f) hitDir.y = 0f;    // 수평만 유지 (선택)
-            enemyAI.ApplyKnockback(hitDir.normalized, knockbackPower, knockbackTime);
+            if (hitDir.sqrMagnitude > 0.0001f)
+            {
+                hitDir.y = 0f; // 수평 유지
+                enemyAI.ApplyKnockback(hitDir.normalized, knockbackPower, knockbackTime);
+            }
         }
 
-        if (anim && !string.IsNullOrEmpty(hurtTrigger))
+        if (anim != null && !string.IsNullOrEmpty(hurtTrigger))
             anim.SetTrigger(hurtTrigger);
 
         if (currentHP <= 0)
@@ -72,6 +92,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     IEnumerator FlashRed()
     {
+        // 머티리얼 색상 Flash
         var mat = rend.material;
         mat.color = Color.red;
         yield return new WaitForSeconds(flashDuration);
@@ -80,21 +101,40 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     void Die()
     {
-        if (enemyAI) enemyAI.SetDeadState();
+        if (isDead) return;
+        isDead = true;
 
-        foreach (var col in GetComponentsInChildren<Collider>())
-            col.enabled = false;
+        // AI 죽음 상태
+        if (enemyAI != null) enemyAI.SetDeadState();
 
-        if (anim && !string.IsNullOrEmpty(deadBool))
+        // 충돌 비활성
+        var cols = GetComponentsInChildren<Collider>();
+        for (int i = 0; i < cols.Length; i++)
+            cols[i].enabled = false;
+
+        // 애니메이션 Dead 세팅
+        if (anim != null && !string.IsNullOrEmpty(deadBool))
             anim.SetBool(deadBool, true);
 
-        if (rb)
+        // 물리 정지
+        if (rb != null)
         {
             rb.velocity = Vector3.zero;
-            rb.isKinematic = true;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true; // 사망 후 밀리지 않게
         }
 
         if (destroyOnDeath)
             Destroy(gameObject, destroyDelay);
+    }
+
+    // 유틸(선택): 현재 HP 조회
+    public int GetCurrentHP() => currentHP;
+
+    // 유틸(선택): 즉시 체력 회복
+    public void Heal(int amount)
+    {
+        if (isDead) return;
+        currentHP = Mathf.Clamp(currentHP + Mathf.Max(0, amount), 0, maxHP);
     }
 }

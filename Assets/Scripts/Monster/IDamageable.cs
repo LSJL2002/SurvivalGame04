@@ -1,6 +1,4 @@
-using UnityEngine;
-
 public interface IDamageable
 {
-    void TakeDamage(int amount, Vector3 hitDir);
+    void TakeDamage(int damage, UnityEngine.Vector3 dir);
 }

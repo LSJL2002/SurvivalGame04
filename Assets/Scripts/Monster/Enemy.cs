@@ -1,374 +1,338 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Refs")]
-    public DayNightCycle dayNight;     // 비우면 자동 탐색
-    public Transform target;           // 비우면 Player 태그 자동 탐색
+    [Header("Target")]
+    public string playerTag = "Player";
+    Transform player;
 
+    [Header("Senses / Ranges")]
+    public float detectionRange = 12f;
+    public float fieldOfView = 120f;
+    public LayerMask visionBlockMask = ~0;
+
+    [Header("Move / Agent")]
+    public float walkSpeed = 2.0f;
+    public float runSpeed = 3.6f;
+    public float attackRange = 1.8f;
+    public float destRefreshTime = 0.15f;
+    public float destRefreshDist = 0.3f;
+
+    [Header("Rotation")]
+    public float turnSpeed = 12f;
+
+    [Header("Combat")]
+    public int attackDamage = 10;
+    public float attackCooldown = 1.2f;
+    public Transform attackPoint;
+    public float attackRadius = 0.8f;
+    public LayerMask playerMask;
+
+    [Header("Animator params")]
+    public string speedFloat = "Speed";   // float
+    public string attackTrigger = "Attack";
+    public string deadBool = "Dead";      // bool
+
+    [Header("Knockback (physics)")]
+    public float knockbackForce = 6f;
+    public float knockbackUpForce = 1.5f;
+    public float knockbackTime = 0.12f;
+    public bool ignoreKnockbackWhileAttacking = true;
+    public float postAttackKnockbackGrace = 0.12f;
+    public float knockbackCooldown = 0.08f;
+
+    // ── internals ────────────────────────────────────────
     NavMeshAgent agent;
     Animator anim;
     Rigidbody rb;
+    bool isDead;
+    bool canAttack = true;
+    bool isAttacking;
+    bool isKnockback;
+    float destTimer;
+    Vector3 lastDest;
 
-    [Header("Combat/AI")]
-    public int damage = 10;
-    public float sightRange = 12f;
-    public float attackRange = 1.8f;
-    public float repathInterval = 0.2f;
-    public float attackCooldown = 1.0f;
-
-    [Header("Animator Triggers")]
-    [SerializeField] string attackTrigger = "Attack"; // Animator와 동일한 트리거명
-
-    [Header("Attack Movement Lock")]
-    [Tooltip("공격 모션 동안 이동을 잠그는 시간(초). 애니 길이에 맞춰 조절")]
-    public float attackLockDuration = 0.45f;
-
-    [Header("NavMesh")]
-    public float navSampleRadius = 3f;
-    public bool autoWarpToNavMesh = true;
-
-    [Header("Knockback")]
-    public float defaultKnockbackTime = 0.2f;
-    public float knockbackDrag = 8f;
-
-    [Header("Death")]
-    public float despawnAfter = 5f;
-
-    float _nextPathTime;
-    float _nextAttackTime;
-    bool _isNightCached;
-    bool _inKnockback;
-    float _stunUntil;
-    bool _isDead;
-
-    // 공격 중 이동잠금 타이머
-    float _unlockMoveAt = -1f;
-
-    Collider[] _colliders;
+    float lastAttackEndTime = -999f;
+    float lastKnockbackTime = -999f;
 
     void Awake()
     {
-        if (dayNight == null) dayNight = FindObjectOfType<DayNightCycle>();
-        if (target == null)
-        {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) target = p.transform;
-        }
-
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
-        _colliders = GetComponentsInChildren<Collider>(true);
+        if (!agent) agent = gameObject.AddComponent<NavMeshAgent>();
 
-        EnsureOnNavMesh();
-        SafeStop(); // 시작은 멈춰두기(밤에만 활성)
-        if (agent) agent.stoppingDistance = Mathf.Max(0f, attackRange - 0.1f);
+        agent.updateRotation = false;
+        agent.updatePosition = false;
+        agent.autoBraking = false;
+        agent.stoppingDistance = Mathf.Max(attackRange * 0.9f, 0.2f);
+        agent.speed = runSpeed;
 
-        // 루트모션은 NavMeshAgent와 충돌하니 기본 비활성 권장
-        if (anim) anim.applyRootMotion = false;
+        if (rb)
+        {
+            rb.isKinematic = false;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
     }
 
-    void OnEnable() => EnsureOnNavMesh();
+    void Start()
+    {
+        var p = GameObject.FindGameObjectWithTag(playerTag);
+        if (p) player = p.transform;
+
+        if (!agent.isOnNavMesh)
+        {
+            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
+                transform.position = hit.position;
+        }
+        agent.Warp(transform.position);
+    }
 
     void Update()
     {
-        if (_isDead) return;
+        if (isDead || player == null) return;
 
-        // 밤/낮 전환
-        bool isNight = dayNight == null || dayNight.isNight;
-        if (_isNightCached != isNight)
+        float dist = Vector3.Distance(transform.position, player.position);
+        destTimer += Time.deltaTime;
+
+        bool actionLocked = isAttacking || isKnockback;
+        float speedForAnim = 0f;
+
+        if (actionLocked)
         {
-            _isNightCached = isNight;
-            if (isNight) { EnsureOnNavMesh(); SafeResume(); }
-            else { SafeStop(); SetMoveSpeed(0f); return; }
-        }
-        if (!isNight) return;
+            if (isAttacking) rb.velocity = Vector3.zero;
 
-        // 넉백/스턴
-        if (_inKnockback || Time.time < _stunUntil)
-        {
-            SetMoveSpeed(0f);
-            return;
-        }
-
-        // 공격 중 이동잠금 적용/해제
-        ApplyAttackMoveLock();
-
-        // 타깃 확보
-        if (target == null)
-        {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) target = p.transform;
-            if (target == null) { SafeStop(); SetMoveSpeed(0f); return; }
-        }
-
-        EnsureOnNavMesh();
-
-        float dist = Vector3.Distance(transform.position, target.position);
-
-        // 시야 밖이면 정지
-        if (dist > sightRange)
-        {
-            SafeStop();
-            SetMoveSpeed(0f);
-            return;
-        }
-
-        bool inAttack = dist <= attackRange;
-
-        // 잠금 중이면 추격/경로 갱신 금지
-        if (IsMoveLocked()) { SetMoveSpeed(0f); return; }
-
-        if (!inAttack)
-        {
-            // 추격
-            if (agent.isStopped) SafeResume();
-            if (Time.time >= _nextPathTime)
-            {
-                _nextPathTime = Time.time + repathInterval;
-                SafeSetDestination(target.position);
-            }
-            SetMoveSpeed(AgentReady() ? agent.velocity.magnitude : 0f);
-        }
-        else
-        {
-            // 공격
-            SafeStop();
-            SetMoveSpeed(0f);
-
-            if (Time.time >= _nextAttackTime)
-            {
-                _nextAttackTime = Time.time + attackCooldown;
-
-                // 타깃을 향해 회전(간단 보정)
-                FaceTarget(target.position);
-
-                // ★ 공격 트리거
-                if (anim) anim.SetTrigger(attackTrigger);
-
-                // ★ 이동 잠금 시작(모션 길이에 맞춰 튜닝)
-                StartMoveLock(attackLockDuration);
-
-                // 실제 데미지는 애니메이션 이벤트(타격 프레임)에서 AnimEvent_AttackHit() 호출
-            }
-        }
-    }
-
-    // === 이동 잠금 로직 ===
-    void StartMoveLock(float duration)
-    {
-        _unlockMoveAt = Time.time + Mathf.Max(0.05f, duration);
-        // 즉시 잠금 반영
-        if (agent)
-        {
             agent.isStopped = true;
-            agent.updatePosition = false;
-            agent.updateRotation = false;
-            agent.velocity = Vector3.zero;
             agent.ResetPath();
-        }
-        if (rb)
-        {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-        }
-    }
+            agent.nextPosition = rb.position;
 
-    bool IsMoveLocked() => Time.time < _unlockMoveAt;
-
-    void ApplyAttackMoveLock()
-    {
-        if (IsMoveLocked())
-        {
-            // 잠금 유지
-            if (agent)
-            {
-                agent.isStopped = true;
-                agent.updatePosition = false;
-                agent.updateRotation = false;
-                agent.velocity = Vector3.zero;
-            }
-            if (rb)
-            {
-                rb.velocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
+            FaceTowards();
+            speedForAnim = 0f; // 잠금 시 이동 없음
         }
         else
         {
-            // 잠금 해제
-            if (agent)
+            if (dist > attackRange || !IsPlayerInFOVAndVisible())
             {
-                if (agent.updatePosition == false) agent.updatePosition = true;
-                if (agent.updateRotation == false) agent.updateRotation = true;
-                // 추격 분기에서 SafeSetDestination가 다시 경로를 깔아줄 것
+                TrySetDestination(player.position);
+
+                Vector3 desired = agent.desiredVelocity; desired.y = 0f;
+
+                if (agent.remainingDistance <= agent.stoppingDistance + 0.05f)
+                    desired = Vector3.zero;
+
+                Vector3 step = desired.sqrMagnitude > 0.0001f
+                    ? desired.normalized * agent.speed * Time.deltaTime
+                    : Vector3.zero;
+
+                rb.MovePosition(rb.position + step);
+                agent.isStopped = false;
+
+                if (desired.sqrMagnitude > 0.0001f) RotateTowards(desired);
+
+                speedForAnim = desired.magnitude;
+            }
+            else
+            {
+                FaceTowards();
+                if (IsPlayerInFOVAndVisible() && canAttack)
+                    StartCoroutine(Co_Attack());
             }
         }
-    }
 
-    // ===== 애니메이션 이벤트: 타격 타이밍 =====
-    public void AnimEvent_AttackHit()
-    {
-        if (_isDead || target == null) return;
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        if (dist > attackRange + 0.2f) return;
-
-        var dmg = target.GetComponentInChildren<IDamageable>();
-        if (dmg != null)
-        {
-            Vector3 hitDir = (target.position - transform.position).normalized;
-            dmg.TakeDamage(damage, hitDir);
-        }
-    }
-
-    // ===== 넉백(외부 호출용) =====
-    public void ApplyKnockback(Vector3 direction, float power) =>
-        ApplyKnockback(direction, power, defaultKnockbackTime);
-
-    public void ApplyKnockback(Vector3 direction, float power, float duration)
-    {
-        if (_isDead) return;
-        direction.y = 0f;
-        StartCoroutine(KnockbackRoutine(direction.normalized, power, duration));
-    }
-
-    // ===== 사망 전환 =====
-    public void SetDeadState()
-    {
-        if (_isDead) return;
-        _isDead = true;
-
-        SafeStop();
-        if (agent) agent.enabled = false;
-
-        if (_colliders != null)
-            foreach (var c in _colliders) if (c) c.enabled = false;
-
+        // Animator: Speed(float)만 사용
         if (anim)
         {
-            anim.SetBool("Dead", true);
-            SetMoveSpeed(0f);
+            if (speedForAnim < 0.03f) speedForAnim = 0f; // dead zone
+            anim.SetFloat(speedFloat, speedForAnim, 0.1f, Time.deltaTime);
         }
 
-        if (rb)
-        {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;
-        }
-
-        if (despawnAfter > 0f) Destroy(gameObject, despawnAfter);
+        agent.nextPosition = rb.position;
     }
 
-    // ===== 코루틴: 넉백 =====
-    IEnumerator KnockbackRoutine(Vector3 dir, float power, float time)
+    void TrySetDestination(Vector3 target)
     {
-        _inKnockback = true;
-        _stunUntil = Time.time + time;
+        if (destTimer < destRefreshTime) return;
 
-        bool agentWasEnabled = AgentReady();
-        if (agentWasEnabled) agent.enabled = false;
+        Vector3 want = target;
+        if (NavMesh.SamplePosition(target, out var hit, 1.0f, NavMesh.AllAreas))
+            want = hit.position;
 
-        if (rb)
+        if ((lastDest - want).sqrMagnitude < destRefreshDist * destRefreshDist) return;
+
+        agent.speed = runSpeed;
+        agent.SetDestination(want);
+        lastDest = want;
+        destTimer = 0f;
+    }
+
+    void RotateTowards(Vector3 dir)
+    {
+        dir.y = 0f; if (dir.sqrMagnitude < 0.0001f) return;
+        var want = Quaternion.LookRotation(dir.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * turnSpeed);
+    }
+
+    void FaceTowards()
+    {
+        if (!player) return;
+        Vector3 dir = player.position - transform.position;
+        dir.y = 0f; if (dir.sqrMagnitude < 0.0001f) return;
+        var want = Quaternion.LookRotation(dir.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, want, Time.deltaTime * turnSpeed);
+    }
+
+    bool IsPlayerInFOVAndVisible()
+    {
+        Vector3 to = player.position - transform.position; to.y = 0f;
+        if (Vector3.Angle(transform.forward, to) > fieldOfView * 0.5f) return false;
+
+        Vector3 eye = transform.position + Vector3.up * 1.6f;
+        Vector3 tgt = player.position + Vector3.up * 1.2f;
+        Vector3 dir = tgt - eye;
+        if (Physics.Raycast(eye, dir.normalized, out var hit, dir.magnitude + 0.05f, visionBlockMask))
+            return hit.transform == player;
+
+        return true;
+    }
+
+    IEnumerator Co_Attack()
+    {
+        isAttacking = true;
+        canAttack = false;
+
+        rb.velocity = Vector3.zero;
+        agent.isStopped = true;
+        agent.ResetPath();
+        FaceTowards();
+
+        if (anim && !string.IsNullOrEmpty(attackTrigger)) anim.SetTrigger(attackTrigger);
+
+        yield return new WaitForSeconds(0.35f);
+
+        if (!isDead && player != null)
         {
-            bool prevKinematic = rb.isKinematic;
-            rb.isKinematic = false;
-            rb.drag = knockbackDrag;
+            bool inRange = Vector3.Distance(transform.position, player.position) <= attackRange + 0.05f;
 
-            rb.velocity = Vector3.zero;
-            rb.AddForce(dir * power, ForceMode.VelocityChange);
+            bool overlapHit = false;
+            Vector3 center = attackPoint ? attackPoint.position
+                                         : (transform.position + transform.forward * 1.0f);
 
-            float t = 0f;
-            while (t < time) { t += Time.deltaTime; yield return null; }
-
-            rb.velocity = Vector3.zero;
-            rb.isKinematic = prevKinematic;
-        }
-        else
-        {
-            float t = 0f;
-            Vector3 start = transform.position;
-            Vector3 end = start + dir * power * 0.1f;
-            while (t < time)
+            if (playerMask.value != 0)
             {
-                t += Time.deltaTime;
-                float a = Mathf.SmoothStep(0f, 1f, t / time);
-                transform.position = Vector3.Lerp(start, end, a);
-                yield return null;
+                var cols = Physics.OverlapSphere(center, attackRadius, playerMask);
+                foreach (var c in cols) { if (c.transform == player) { overlapHit = true; break; } }
+            }
+
+            if (inRange || overlapHit)
+            {
+                var dmg = player.GetComponent<IDamageable>();
+                if (dmg != null)
+                {
+                    Vector3 dir = (player.position - transform.position).normalized;
+                    dmg.TakeDamage(attackDamage, dir);
+                }
             }
         }
 
-        if (agent)
-        {
-            agent.enabled = true;
-            EnsureOnNavMesh();
-            agent.isStopped = false;
-        }
+        yield return new WaitForSeconds(attackCooldown);
 
-        _inKnockback = false;
+        lastAttackEndTime = Time.time;
+        isAttacking = false;
+        canAttack = true;
+        agent.isStopped = false;
+        agent.Warp(rb.position);
     }
 
-    // ===== NavMesh/이동 유틸 =====
-    bool AgentReady() => agent != null && agent.enabled && agent.isOnNavMesh;
-
-    void SafeStop()
+    // ── Knockback ────────────────────────────────────────
+    public void ApplyKnockback(Vector3 dir, float force, float duration)
     {
-        if (!AgentReady()) return;
+        if (isDead || rb == null) return;
+        if (ignoreKnockbackWhileAttacking && isAttacking) return;
+        if (Time.time - lastAttackEndTime < postAttackKnockbackGrace) return;
+        if (isKnockback) return;
+        if (Time.time - lastKnockbackTime < knockbackCooldown) return;
+
+        StartCoroutine(Co_KnockbackCustom(dir, force, duration));
+    }
+
+    public void ApplyKnockback(Vector3 dir)
+    {
+        if (isDead || rb == null) return;
+        if (ignoreKnockbackWhileAttacking && isAttacking) return;
+        if (Time.time - lastAttackEndTime < postAttackKnockbackGrace) return;
+        if (isKnockback) return;
+        if (Time.time - lastKnockbackTime < knockbackCooldown) return;
+
+        StartCoroutine(Co_Knockback(dir));
+    }
+
+    IEnumerator Co_KnockbackCustom(Vector3 dir, float force, float duration)
+    {
+        float prevForce = knockbackForce;
+        float prevTime = knockbackTime;
+        knockbackForce = force;
+        knockbackTime = duration;
+        yield return StartCoroutine(Co_Knockback(dir));
+        knockbackForce = prevForce;
+        knockbackTime = prevTime;
+    }
+
+    IEnumerator Co_Knockback(Vector3 dir)
+    {
+        isKnockback = true;
+        lastKnockbackTime = Time.time;
+
         agent.isStopped = true;
-        agent.velocity = Vector3.zero;
         agent.ResetPath();
-    }
 
-    void SafeResume()
-    {
-        if (AgentReady()) agent.isStopped = false;
-    }
-
-    bool SafeSetDestination(Vector3 pos)
-    {
-        if (!AgentReady()) return false;
-        if (agent.isStopped) agent.isStopped = false; // 공격 후 자동 해제
-        if (agent.hasPath) agent.ResetPath();
-        return agent.SetDestination(pos);
-    }
-
-    void EnsureOnNavMesh()
-    {
-        if (agent == null) return;
-        if (!agent.enabled) agent.enabled = true;
-        if (agent.isOnNavMesh) return;
-
-        if (autoWarpToNavMesh &&
-            NavMesh.SamplePosition(transform.position, out var hit, navSampleRadius, NavMesh.AllAreas))
-        {
-            agent.Warp(hit.position);
-        }
-    }
-
-    void SetMoveSpeed(float v)
-    {
-        if (anim) anim.SetFloat("Speed", v);
-    }
-
-    void FaceTarget(Vector3 worldPos)
-    {
-        Vector3 dir = worldPos - transform.position;
         dir.y = 0f;
-        if (dir.sqrMagnitude < 0.0001f) return;
-        transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+        if (dir.sqrMagnitude < 0.0001f) dir = -transform.forward;
+        dir = dir.normalized;
+
+        Vector3 vel = dir * knockbackForce + Vector3.up * knockbackUpForce;
+        rb.AddForce(vel, ForceMode.VelocityChange);
+
+        yield return new WaitForSeconds(knockbackTime);
+
+        isKnockback = false;
+        agent.isStopped = false;
+        agent.Warp(rb.position);
     }
 
-#if UNITY_EDITOR
+    public void SetDeadState()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        StopAllCoroutines();
+        isAttacking = false;
+        isKnockback = false;
+
+        if (anim && !string.IsNullOrEmpty(deadBool)) anim.SetBool(deadBool, true);
+
+        rb.velocity = Vector3.zero;
+        foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+
+        agent.ResetPath();
+        agent.isStopped = true;
+    }
+
+    public void Die()
+    {
+        SetDeadState();
+        Destroy(gameObject, 2f);
+    }
+
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, sightRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Vector3 c = attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
+        Gizmos.DrawWireSphere(c, attackRadius);
     }
-#endif
 }
