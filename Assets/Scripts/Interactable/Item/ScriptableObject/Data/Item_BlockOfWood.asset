@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09ad652fb6330534ea12caefb295e792, type: 3}
+  m_Name: Item_BlockOfWood
+  m_EditorClassIdentifier: 
+  displayName: "\uB098\uBB34 \uBE14\uB85D"
+  description: "\uB098\uBB34 \uBE14\uB85D\uC785\uB2C8\uB2E4"
+  type: 3
+  icon: {fileID: 21300000, guid: b65f8dcedc40a7f459f1d82b6532c670, type: 3}
+  dropPrefab: {fileID: 3849539328894086125, guid: 2222ac5d2178daa4d88a51fa0ba14940, type: 3}
+  attackDamage: 0
+  canStack: 1
+  maxStackAmount: 10
+  consumables: []
+  equipPrefab: {fileID: 0}
+  boostDuration: 0
+  buildPrefab: {fileID: 936686305421519340, guid: 32c3e73bf19586746b935a669c34fac4, type: 3}
