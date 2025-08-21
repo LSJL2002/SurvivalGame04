@@ -1,74 +1,79 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DayNightCycle : MonoBehaviour
 {
-    [Range(0.0f, 1.0f)]
-    public float time;
-    public float fullDayLength;
+    [Range(0f, 1f)] public float time;
+    public float fullDayLength = 300f;
     public float startTime = 0.4f;
     private float timeRate;
-    public Vector3 noon; // In this case its Vector 90,0,0
+    public Vector3 noon = new Vector3(90, 0, 0);
 
     [Header("Sun")]
     public Light sun;
     public Gradient sunColor;
     public AnimationCurve sunIntensity;
+
     [Header("Moon")]
     public Light moon;
     public Gradient moonColor;
     public AnimationCurve moonIntensity;
+
     [Header("Other Lighting")]
     public AnimationCurve lightingIntesityMultiplier;
-    public AnimationCurve reflectionIntesityMultiplier;
 
-    // Day counter and night flag
+    // ✅ 밤 판정 파라미터
+    [Header("Night Detection")]
+    [Range(0f, 1f)] public float nightStart = 0.75f;   // 이 시간부터 밤 시작
+    [Range(0f, 1f)] public float nightEnd = 0.25f;   // 이 시간까지 밤
+    [Range(0f, 5f)] public float sunIntensityNightThreshold = 0.05f; // 태양 밝기 기준(보조)
+
     public int dayCount = 1;
     public bool isNight = false;
 
     void Start()
     {
-        timeRate = 1.0f / fullDayLength;
-        time = startTime;
+        timeRate = 1f / Mathf.Max(1f, fullDayLength);
+        time = Mathf.Clamp01(startTime);
     }
 
     void Update()
     {
-        float previousTime = time;
-        time = (time + timeRate * Time.deltaTime) % 1.0f;
+        float prev = time;
+        time = (time + timeRate * Time.deltaTime) % 1f;
+        if (prev > time) dayCount++;
 
-        // Increment day counter when a new day starts
-        if (previousTime > time)
+        UpdateLighting(sun, sunColor, sunIntensity, 0.25f);
+        UpdateLighting(moon, moonColor, moonIntensity, 0.75f);
+
+        RenderSettings.ambientIntensity = lightingIntesityMultiplier != null
+            ? lightingIntesityMultiplier.Evaluate(time) : 1f;
+
+        // ✅ 밤 판정: 시간 구간 + 태양 밝기 둘 다 사용
+        bool nightByTime = (time >= nightStart || time < nightEnd);
+        bool nightBySun = sun != null && sun.intensity <= sunIntensityNightThreshold;
+        bool newIsNight = nightByTime || nightBySun;
+
+        if (newIsNight != isNight)
         {
-            dayCount++;
+            isNight = newIsNight;
+            Debug.Log($"[DayNight] isNight -> {isNight}  (time={time:0.000}, sunI={sun?.intensity:0.00})");
         }
-
-        // Night detection (example: night is between 0.75 and 0.25)
-        isNight = (time >= 0.75f || time < 0.25f);
-
-        UpdateLighting(sun, sunColor, sunIntensity);
-        UpdateLighting(moon, moonColor, moonIntensity);
-
-        RenderSettings.ambientIntensity = lightingIntesityMultiplier.Evaluate(time);
     }
 
-    void UpdateLighting(Light lightSource, Gradient gradient, AnimationCurve intensityCurve)
+    void UpdateLighting(Light lightSource, Gradient gradient, AnimationCurve intensityCurve, float phase)
     {
-        float intensity = intensityCurve.Evaluate(time);
+        if (!lightSource) return;
 
-        lightSource.transform.eulerAngles = (time - (lightSource == sun ? 0.25f : 0.75f)) * noon * 4f;
-        lightSource.color = gradient.Evaluate(time);
+        float t = time;
+        float intensity = intensityCurve != null ? intensityCurve.Evaluate(t) : 1f;
+
+        lightSource.transform.eulerAngles = (t - phase) * noon * 4f;
+        if (gradient != null) lightSource.color = gradient.Evaluate(t);
         lightSource.intensity = intensity;
 
+        // 강/약에 따라 GameObject on/off
         GameObject go = lightSource.gameObject;
-        if (lightSource.intensity == 0 && go.activeInHierarchy)
-        {
-            go.SetActive(false);
-        }
-        else if (lightSource.intensity > 0 && !go.activeInHierarchy)
-        {
-            go.SetActive(true);
-        }
+        if (intensity <= 0f && go.activeSelf) go.SetActive(false);
+        else if (intensity > 0f && !go.activeSelf) go.SetActive(true);
     }
 }

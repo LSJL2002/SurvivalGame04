@@ -25,10 +25,7 @@ public class CraftingManager : MonoBehaviour
 
         if (recipe.outputItem.dropPrefab != null)
         {
-            for (int i = 0; i < recipe.outputAmount; i++)
-            {
-                inventory.ThrowItem(recipe.outputItem, recipe.outputAmount);
-            }
+            inventory.ThrowItem(recipe.outputItem, recipe.outputAmount);
         }
     }
 }

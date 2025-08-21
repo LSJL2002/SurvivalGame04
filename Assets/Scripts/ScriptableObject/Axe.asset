@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4776a628c06e7ff4484605969ebaf280, type: 3}
-  m_Name: NewRecipe
+  m_Name: Axe
   m_EditorClassIdentifier: 
   inputs:
-  - item: {fileID: 11400000, guid: c1b758a0c7326b14db9c6cc65e71ae7c, type: 2}
+  - item: {fileID: 11400000, guid: 48acfe93b3edc944baef72d150542d70, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: df4cd30a602b3e14ca9c6a0a61eb24c9, type: 2}
     amount: 1
-  outputItem: {fileID: 11400000, guid: 62b9c79233daaf34798a8487e496371e, type: 2}
+  outputItem: {fileID: 11400000, guid: 78eead27c8b054348a0990eba8d66ebc, type: 2}
   outputAmount: 1
