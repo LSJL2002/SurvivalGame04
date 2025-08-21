@@ -23,4 +23,4 @@ MonoBehaviour:
   consumables: []
   equipPrefab: {fileID: 0}
   boostDuration: 0
-  buildPrefab: {fileID: 936686305421519340, guid: 32c3e73bf19586746b935a669c34fac4, type: 3}
+  buildPrefab: {fileID: 2633990193256790789, guid: 523401027aaab154cbe7cef67e8d51f1, type: 3}
