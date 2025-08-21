@@ -4,68 +4,71 @@ using System.Collections.Generic;
 
 public class NightOnlyEnemyToggle : MonoBehaviour
 {
-    public DayNightCycle dayNight;          // 씬의 DayNightCycle (인스펙터에 드래그 권장)
+    [Header("References")]
+    public DayNightCycle dayNight; // Scene’s DayNightCycle
+    public GameObject monsterPrefab;
 
-    [Header("테스트용")]
-    public bool debugOverride = false;      // 체크하면 강제
-    public bool debugNight = false;         // true=밤, false=낮
+    [Header("Spawn Settings")]
+    public int spawnCount = 5;            // How many monsters to spawn
+    public float spawnRadius = 50f;       // Radius around spawner to place monsters
+    public LayerMask groundLayer;         // Where monsters can spawn
+    public float minSpawnHeight = 1f;     // Height offset above ground
 
-    // 한 번만 모아두고, 매 프레임 강제로 on/off
-    List<Renderer> renderers = new List<Renderer>();
-    List<Collider> colliders = new List<Collider>();
-    List<Animator> animators = new List<Animator>();
-    NavMeshAgent agent;
-    bool lastNight;
-
-    void Awake()
-    {
-        if (dayNight == null) dayNight = FindObjectOfType<DayNightCycle>();
-        agent = GetComponent<NavMeshAgent>();
-
-        // Enemy 루트 전체에서 시각/충돌/애니메이터를 한 번만 수집
-        renderers.AddRange(GetComponentsInChildren<Renderer>(true));
-        colliders.AddRange(GetComponentsInChildren<Collider>(true));
-        animators.AddRange(GetComponentsInChildren<Animator>(true));
-    }
+    private List<GameObject> activeMonsters = new List<GameObject>();
+    private bool hasSpawned = false;
 
     void Update()
     {
-        if (dayNight == null && !debugOverride) return;
+        if (dayNight == null || monsterPrefab == null) return;
 
-        bool night = dayNight ? dayNight.isNight : false;
-        if (debugOverride) night = debugNight;
-
-        // 밤/낮 상태가 바뀔 때만 로그
-        if (lastNight != night)
+        // Night started → spawn if not already
+        if (dayNight.isNight && !hasSpawned)
         {
-            lastNight = night;
-            Debug.Log($"[NightToggle] {name} night={night}");
+            SpawnMonsters();
+            hasSpawned = true;
         }
-
-        // ✅ 매 프레임 강제 동기화: 밤이면 전부 켜기, 낮이면 전부 끄기
-        foreach (var r in renderers) if (r) r.enabled = night;
-        foreach (var c in colliders) if (c) c.enabled = night;
-        foreach (var a in animators) if (a) a.enabled = night;
-
-        // NavMeshAgent는 enable/disable 하지 않고 isStopped만 제어
-        if (agent)
+        // Day started → despawn all
+        else if (!dayNight.isNight && hasSpawned)
         {
-            if (!agent.enabled) agent.enabled = true;
+            DespawnMonsters();
+            hasSpawned = false;
+        }
+    }
 
-            if (night)
-            {
-                // 밤: NavMesh 위로 보정 + 이동 허용
-                if (!agent.isOnNavMesh &&
-                    NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-                    agent.Warp(hit.position);
+    void SpawnMonsters()
+    {
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3 spawnPos = GetRandomSpawnPoint();
+            GameObject monster = Instantiate(monsterPrefab, spawnPos, Quaternion.identity);
+            activeMonsters.Add(monster);
+        }
+        Debug.Log($"[Spawner] Spawned {spawnCount} monsters.");
+    }
 
-                agent.isStopped = false;
-            }
-            else
+    void DespawnMonsters()
+    {
+        foreach (GameObject m in activeMonsters)
+        {
+            if (m != null) Destroy(m);
+        }
+        activeMonsters.Clear();
+        Debug.Log("[Spawner] All monsters despawned.");
+    }
+
+    Vector3 GetRandomSpawnPoint()
+    {
+        for (int attempts = 0; attempts < 10; attempts++) // try multiple times
+        {
+            Vector3 randomPos = transform.position + Random.insideUnitSphere * spawnRadius;
+            randomPos.y += 20f; // cast from above
+
+            if (Physics.Raycast(randomPos, Vector3.down, out RaycastHit hit, 50f, groundLayer))
             {
-                // 낮: 정지
-                agent.isStopped = true;
+                return hit.point + Vector3.up * minSpawnHeight;
             }
         }
+        // fallback: just return spawner position
+        return transform.position + Vector3.up * minSpawnHeight;
     }
 }
