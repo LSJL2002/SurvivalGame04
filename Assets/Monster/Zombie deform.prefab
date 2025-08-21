@@ -281,20 +281,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e08986090d5156847b254a337501436a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  rb: {fileID: 0}
+  agent: {fileID: 0}
+  hitCollider: {fileID: 0}
+  player: {fileID: 0}
+  pursueOnlyAtNight: 1
   dayNight: {fileID: 0}
-  target: {fileID: 0}
-  damage: 10
-  sightRange: 12
+  sun: {fileID: 0}
+  sunChaseIntensityThreshold: 0.2
+  maxHP: 100
+  detectRange: 12
+  stopDistance: 1.8
   attackRange: 1
-  repathInterval: 0.2
   attackCooldown: 5
-  attackTrigger: Attack
-  attackLockDuration: 2
-  navSampleRadius: 3
-  autoWarpToNavMesh: 1
-  defaultKnockbackTime: 0.2
+  knockbackPower: 6
+  knockbackTime: 0.15
   knockbackDrag: 8
-  despawnAfter: 5
+  destroyDelay: 3
 --- !u!114 &5366585765589923553
 MonoBehaviour:
   m_ObjectHideFlags: 0
