@@ -27,7 +27,7 @@ public class PlayerCondition : MonoBehaviour, IDamageable
             health.Subtract(5 * Time.deltaTime);
         }
 
-        if (health.curValue < 0f)
+        if (health.curValue <= 0f)
             {
                 Die();
             }
@@ -55,8 +55,8 @@ public class PlayerCondition : MonoBehaviour, IDamageable
 
     public void Die()
     {
-        Time.timeScale = 0f;
         Debug.Log("플레이어가 죽었다.");
+        FindObjectOfType<GameOverManager>().ShowGameOver();
     }
 
     public void TakeDamage(int damage, Vector3 dir)

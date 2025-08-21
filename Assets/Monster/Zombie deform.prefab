@@ -281,24 +281,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e08986090d5156847b254a337501436a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
-  rb: {fileID: 0}
-  agent: {fileID: 0}
-  hitCollider: {fileID: 0}
-  player: {fileID: 0}
-  pursueOnlyAtNight: 1
-  dayNight: {fileID: 0}
-  sun: {fileID: 0}
-  sunChaseIntensityThreshold: 0.2
-  maxHP: 100
-  detectRange: 12
-  stopDistance: 1.8
+  playerTag: Player
+  detectionRange: 12
+  fieldOfView: 120
+  visionBlockMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  runSpeed: 1
   attackRange: 1
+  destRefreshTime: 0.15
+  destRefreshDist: 0.3
+  turnSpeed: 12
+  attackDamage: 10
   attackCooldown: 5
-  knockbackPower: 6
-  knockbackTime: 0.15
-  knockbackDrag: 8
-  destroyDelay: 3
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  speedFloat: Speed
+  attackTrigger: Attack
+  deadBool: Dead
+  knockbackForce: 6
+  knockbackUpForce: 1.5
+  knockbackTime: 0.05
+  ignoreKnockbackWhileAttacking: 1
+  postAttackKnockbackGrace: 0.12
+  knockbackCooldown: 0.08
+  navSampleRadius: 2
+  navReacquireInterval: 0.2
 --- !u!114 &5366585765589923553
 MonoBehaviour:
   m_ObjectHideFlags: 0

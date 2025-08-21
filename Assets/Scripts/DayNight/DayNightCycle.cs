@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class DayNightCycle : MonoBehaviour
@@ -24,6 +25,8 @@ public class DayNightCycle : MonoBehaviour
     [Header("Other Lighting")]
     public AnimationCurve lightingIntesityMultiplier;
     public AnimationCurve reflectionIntesityMultiplier;
+    [Header("DayCounter")]
+    public TextMeshProUGUI dayCounter;
 
     // Day counter and night flag
     public int dayCount = 1;
@@ -33,6 +36,7 @@ public class DayNightCycle : MonoBehaviour
     {
         timeRate = 1.0f / fullDayLength;
         time = startTime;
+        dayCounter.text = $"Day: {dayCount}";
     }
 
     void Update()
@@ -44,6 +48,10 @@ public class DayNightCycle : MonoBehaviour
         if (previousTime > time)
         {
             dayCount++;
+            dayCounter.text = $"Day: {dayCount}";
+
+            // Notify GameManager
+            GameManager.Instance.OnNewDay(dayCount);
         }
 
         // Night detection (example: night is between 0.75 and 0.25)

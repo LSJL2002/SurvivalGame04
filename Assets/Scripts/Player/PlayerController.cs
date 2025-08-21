@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (canLook)
+        if (canLook && !GameOverManager.IsGameOver)
         {
             CameraLook();
         }
@@ -222,6 +222,8 @@ public class PlayerController : MonoBehaviour
 
     public void OnInventoryButton(InputAction.CallbackContext CallbackContext)
     {
+        if (GameOverManager.IsGameOver) return; 
+
         if (CallbackContext.phase == InputActionPhase.Started)
         {
             inventory?.Invoke();
