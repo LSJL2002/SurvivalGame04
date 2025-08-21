@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class UIInventory : MonoBehaviour
 {
+    [SerializeField] public BuildingSystem buildingSystem;
     private enum ActiveMenu
     {
         None,
@@ -212,7 +213,13 @@ public class UIInventory : MonoBehaviour
 
     public void ThrowItem(ItemData data, int amount)
     {
+        var player = CharacterManager.Instance.Player;
         Transform playerTransform = CharacterManager.Instance.Player.transform;
+
+        if (player.equip.curEquip != null && player.equip.curEquip.itemData == data)
+        {
+            player.equip.UnEquip();
+        }
 
         for (int i = 0; i < amount; i++)
         {
@@ -273,6 +280,10 @@ public class UIInventory : MonoBehaviour
 
             UpdateUI();
             UpdateHotbarDisplay();
+        }
+        else if (data.type == ItemType.Build)
+        {
+            buildingSystem.StartPlacing(data);
         }
     }
 

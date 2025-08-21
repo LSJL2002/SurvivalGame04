@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // If you use TextMeshPro for the text
+using TMPro;
 
 public class CraftingUIButton : MonoBehaviour
 {
@@ -9,37 +9,54 @@ public class CraftingUIButton : MonoBehaviour
 
     [Header("UI References")]
     public Button button;
-    public Image inputImage;
+
+    [System.Serializable]
+    public struct InputSlot
+    {
+        public Image icon;
+        public TextMeshProUGUI amountText;
+    }
+
+    public InputSlot[] inputSlots; // assign 3 in the inspector
     public Image outputImage;
-    public TextMeshProUGUI recipeText; // Or UnityEngine.UI.Text if using default Text
+    public TextMeshProUGUI outputAmount;
+    public TextMeshProUGUI recipeText;
 
     void Start()
     {
-        // Update the UI elements
         UpdateButtonUI();
-
-        // Add listener for crafting
         button.onClick.AddListener(() => craftingManager.Craft(recipe));
     }
 
     public void UpdateButtonUI()
     {
-        if (recipe.inputs != null && recipe.inputs.Length > 0)
+        // First hide all input slots
+        foreach (var slot in inputSlots)
         {
-            // Take the first input for display (if multiple inputs, you could extend this)
-            inputImage.sprite = recipe.inputs[0].item.icon;
-            inputImage.enabled = true;
-        }
-        else
-        {
-            inputImage.enabled = false;
+            slot.icon.gameObject.SetActive(false);
+            slot.amountText.gameObject.SetActive(false);
         }
 
+        // Then show only the ones we need
+        if (recipe.inputs != null)
+        {
+            for (int i = 0; i < recipe.inputs.Length && i < inputSlots.Length; i++)
+            {
+                var ingredient = recipe.inputs[i];
+                inputSlots[i].icon.sprite = ingredient.item.icon;
+                inputSlots[i].icon.gameObject.SetActive(true);
+
+                inputSlots[i].amountText.text = ingredient.amount.ToString();
+                inputSlots[i].amountText.gameObject.SetActive(true);
+            }
+        }
+
+        // Output
         if (recipe.outputItem != null)
         {
             outputImage.sprite = recipe.outputItem.icon;
             outputImage.enabled = true;
-
+            outputAmount.text = recipe.outputAmount.ToString();
             recipeText.text = recipe.outputItem.displayName;
         }
         else

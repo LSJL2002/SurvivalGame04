@@ -2,8 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ToolType
+{
+    None,
+    Axe,
+    Pickaxe
+}
 public class EquipTool : Equip
 {
+    public ToolType ToolType;
     public float attackRate;
     private bool attacking;
     public float attackDistance;
@@ -33,8 +40,8 @@ public class EquipTool : Equip
             {
                 Debug.Log("Attack)");
                 attacking = true;
-                //animator.SetTrigger("Attack");
-                //Invoke("OnCanAttack", attackRate);
+                animator.SetTrigger("Attack");
+                Invoke("OnCanAttack", attackRate);
             }
         }
     }
@@ -50,13 +57,14 @@ public class EquipTool : Equip
 
         if (Physics.Raycast(ray, out hit, attackDistance))
         {
-            // if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
-            // {
-            //     resource.Gather(hit.point, hit.normal);
-            // }
-            if (doesDealDamage && hit.collider.TryGetComponent<IDamagable>(out IDamagable damagable))
+            if (doesGatherResources && hit.collider.TryGetComponent(out Resource resource))
             {
-                damagable.TakePhysicalDamage(damage);
+                resource.Gather(hit.point, hit.normal, this);
+            }
+            if (doesDealDamage && hit.collider.TryGetComponent<IDamageable>(out IDamageable damagable))
+            {
+                Vector3 hitDir = (hit.point - transform.position).normalized;
+                damagable.TakeDamage(damage, hitDir);
             }
         }
     }

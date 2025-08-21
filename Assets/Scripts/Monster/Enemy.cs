@@ -1,235 +1,321 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.AI;
+using System.Collections;
 
-[RequireComponent(typeof(Rigidbody))]
-[DefaultExecutionOrder(-100)] // EnemyHealth.Start()보다 먼저 동작(HP 세팅 선행)
 public class Enemy : MonoBehaviour
 {
-    public enum State { Idle, Chase, Attack, Dead }
+    [Header("Refs")]
+    public DayNightCycle dayNight;        // 비우면 자동 탐색
+    public Transform target;              // 비우면 Player 태그 자동 탐색
 
-    [Header("Target")]
-    public string targetTag = "Player";
-    public LayerMask targetMask;         // 공격 판정할 레이어(예: Player)
-    public Transform target;             // 비워두면 태그로 자동탐색
+    private NavMeshAgent agent;
+    private Animator anim;
+    private Rigidbody rb;
 
-    [Header("Enemy Type (1~5)")]
-    [Range(1, 5)] public int enemyType = 1;
-    [SerializeField] int[] hpByType = { 40, 60, 90, 120, 180 };
+    [Header("AI Settings")]
+    public float sightRange = 12f;
+    public float attackRange = 1.8f;
+    public float repathInterval = 0.2f;
+    public float attackCooldown = 1.0f;
 
-    [Header("Vision / Move")]
-    [SerializeField] float visionRange = 10f;  // 시야 거리
-    [SerializeField] float chaseSpeed = 3.0f;  // 타입별로 덮어씌움
-    [SerializeField] float stopDistance = 0.2f;
+    [Header("NavMesh")]
+    public float navSampleRadius = 3f;    // NavMesh.SamplePosition 반경
+    public bool autoWarpToNavMesh = true; // NavMesh 밖이면 근처로 워프
 
-    [Header("Attack")]
-    [SerializeField] int attackDamage = 10;    // 타입별로 덮어씌움
-    [SerializeField] float attackRange = 2.0f;
-    [SerializeField] float attackCooldown = 1.2f;
-    [SerializeField] float attackDelay = 0.3f;       // 애니 이벤트 안 쓸 때 타이밍
-    [SerializeField] bool useAnimationEvent = true;  // 애니 이벤트로 타격할지
-    [SerializeField] Transform attackPoint;          // 비워두면 전방 1m
+    [Header("Knockback")]
+    public float defaultKnockbackTime = 0.2f; // ApplyKnockback(dir, power) 사용 시 지속시간
+    public float knockbackDrag = 8f;          // 넉백 중 감속(리짓바디 있을 때)
 
-    [Header("Animator Params")]
-    public string speedFloat = "Speed";
-    public string attackTrigger = "Attack";
-    public string deadBool = "Dead";
+    [Header("Death")]
+    public float despawnAfter = 5f;      // 죽고 나서 파괴까지 시간(<=0이면 유지)
 
-    Rigidbody rb;
-    Animator anim;
-    EnemyHealth hp;
-    State state = State.Idle;
-    float atkTimer;
+    // 내부 상태
+    private float _nextPathTime;
+    private float _nextAttackTime;
+    private bool _isNightCached;
+    private bool _inKnockback;
+    private float _stunUntil;
+    private bool _isDead;
+
+    // 캐시
+    private Collider[] _colliders;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        if (dayNight == null) dayNight = FindObjectOfType<DayNightCycle>();
+        if (target == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p) target = p.transform;
+        }
+
+        agent = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
-        hp = GetComponent<EnemyHealth>();
-        ApplyEnemyType(); // 속도/공격력/HP 세팅
+        rb = GetComponent<Rigidbody>();
+        _colliders = GetComponentsInChildren<Collider>(true);
+
+        EnsureOnNavMesh();
+        SafeStop(); // 시작은 멈춤(밤에만 움직이게)
     }
 
-    void Start()
+    void OnEnable()
     {
-        if (!target)
-        {
-            var go = GameObject.FindGameObjectWithTag(targetTag);
-            if (go) target = go.transform;
-        }
+        EnsureOnNavMesh();
     }
 
     void Update()
     {
-        if (state == State.Dead) return;
+        if (_isDead) return;
 
-        if (atkTimer > 0f) atkTimer -= Time.deltaTime;
-
-        // 애니 속도 파라미터(댐핑)
-        if (anim)
+        // 밤/낮 전환 한번만 반영
+        bool isNight = dayNight == null || dayNight.isNight;
+        if (_isNightCached != isNight)
         {
-            float planar = new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude;
-            anim.SetFloat(speedFloat, planar, 0.1f, Time.deltaTime);
-        }
-
-        switch (state)
-        {
-            case State.Idle:
-                LookForTarget();
-                // 제자리 대기
-                rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-                break;
-
-            case State.Chase:
-                Chase();
-                break;
-
-            case State.Attack:
-                rb.velocity = Vector3.zero;
-                break;
-        }
-
-        // 타겟 바라보기(수평 회전)
-        if (target)
-        {
-            var look = target.position - transform.position; look.y = 0f;
-            if (look.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation, Quaternion.LookRotation(look), Time.deltaTime * 10f);
-        }
-    }
-
-    void LookForTarget()
-    {
-        if (!target || Vector3.Distance(transform.position, target.position) > visionRange)
-            target = FindClosestByTag(targetTag);
-
-        if (!target) { state = State.Idle; return; }
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        state = (dist <= visionRange) ? State.Chase : State.Idle;
-    }
-
-    void Chase()
-    {
-        if (!target) { state = State.Idle; return; }
-
-        float dist = Vector3.Distance(transform.position, target.position);
-        if (dist > visionRange * 1.25f) { state = State.Idle; return; }
-
-        if (dist <= attackRange && atkTimer <= 0f)
-        {
-            StartAttack();
-            return;
-        }
-
-        MoveTowards(target.position, chaseSpeed);
-    }
-
-    void MoveTowards(Vector3 goal, float speed)
-    {
-        Vector3 to = goal - transform.position; to.y = 0f;
-        if (to.magnitude <= stopDistance)
-        {
-            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
-            return;
-        }
-
-        Vector3 dir = to.normalized;
-        rb.velocity = dir * speed + Vector3.up * rb.velocity.y; // 중력 유지
-    }
-
-    // ───── Attack core ─────
-    void StartAttack()
-    {
-        state = State.Attack;
-        rb.velocity = Vector3.zero;
-        atkTimer = attackCooldown;
-
-        if (anim) anim.SetTrigger(attackTrigger);
-
-        if (!useAnimationEvent)
-            StartCoroutine(AttackHitAfter(attackDelay));
-        // useAnimationEvent=true면 애니메이션 이벤트에서 AnimationAttackHit() 호출
-    }
-
-    IEnumerator AttackHitAfter(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        DoMeleeHit();
-        if (state != State.Dead) state = State.Chase;
-    }
-
-    // 애니메이션 이벤트용 (클립 타임라인에서 호출)
-    public void AnimationAttackHit()
-    {
-        if (state == State.Dead) return;
-        DoMeleeHit();
-    }
-
-    void DoMeleeHit()
-    {
-        Vector3 center = attackPoint
-            ? attackPoint.position
-            : (transform.position + transform.forward * 1.0f);
-
-        Collider[] hits = Physics.OverlapSphere(center, attackRange, targetMask);
-        foreach (var h in hits)
-        {
-            if (h.TryGetComponent<IDamageable>(out var dmg))
+            _isNightCached = isNight;
+            if (isNight)
             {
-                Vector3 dirToTarget = (h.transform.position - transform.position).normalized;
-                dmg.TakeDamage(attackDamage, dirToTarget);
+                EnsureOnNavMesh();
+                SafeResume();
+            }
+            else
+            {
+                SafeStop();
+                if (anim) anim.SetFloat("Speed", 0f);
+                return;
+            }
+        }
+        if (!isNight) return;
+
+        // 넉백/스턴 중이면 AI 중지
+        if (_inKnockback || Time.time < _stunUntil)
+        {
+            if (anim) anim.SetFloat("Speed", 0f);
+            return;
+        }
+
+        // 타겟 확보
+        if (target == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p) target = p.transform;
+            if (target == null)
+            {
+                SafeStop();
+                if (anim) anim.SetFloat("Speed", 0f);
+                return;
+            }
+        }
+
+        EnsureOnNavMesh();
+
+        float dist = Vector3.Distance(transform.position, target.position);
+
+        // 시야 밖 -> 정지
+        if (dist > sightRange)
+        {
+            SafeStop();
+            if (anim) anim.SetFloat("Speed", 0f);
+            return;
+        }
+
+        bool inAttack = dist <= attackRange;
+
+        if (!inAttack)
+        {
+            if (Time.time >= _nextPathTime)
+            {
+                _nextPathTime = Time.time + repathInterval;
+                SafeSetDestination(target.position);
+            }
+
+            if (anim)
+            {
+                float speed = AgentReady() ? agent.velocity.magnitude : 0f;
+                anim.SetFloat("Speed", speed);
+            }
+        }
+        else
+        {
+            SafeStop();
+            if (anim) anim.SetFloat("Speed", 0f);
+
+            if (Time.time >= _nextAttackTime)
+            {
+                _nextAttackTime = Time.time + attackCooldown;
+                if (anim) anim.SetTrigger("Attack");
+                // 실제 데미지는 애니메이션 이벤트에서 호출하는 걸 권장.
+                // DealDamage();
             }
         }
     }
-    // ───────────────────────
 
-    // EnemyHealth에서 사망 시 호출
+    // ===================== 외부에서 호출할 API =====================
+
+    /// <summary>
+    /// 넉백(지속시간은 defaultKnockbackTime 사용)
+    /// </summary>
+    public void ApplyKnockback(Vector3 direction, float power)
+    {
+        ApplyKnockback(direction, power, defaultKnockbackTime);
+    }
+
+    /// <summary>
+    /// 넉백(방향/힘/지속시간 지정)
+    /// </summary>
+    public void ApplyKnockback(Vector3 direction, float power, float duration)
+    {
+        if (_isDead) return;
+        direction.y = 0f;
+        StartCoroutine(KnockbackRoutine(direction.normalized, power, duration));
+    }
+
+    /// <summary>
+    /// 사망 상태로 전환(외부에서 HP 0 될 때 호출)
+    /// </summary>
     public void SetDeadState()
     {
-        state = State.Dead;
-        rb.velocity = Vector3.zero;
-        if (anim) anim.SetBool(deadBool, true);
+        if (_isDead) return;
+        _isDead = true;
+
+        // 에이전트/이동 정지
+        SafeStop();
+        if (agent) agent.enabled = false;
+
+        // 콜라이더 끄기(원하면 루트만 남기고 끄기)
+        if (_colliders != null)
+        {
+            for (int i = 0; i < _colliders.Length; i++)
+                if (_colliders[i]) _colliders[i].enabled = false;
+        }
+
+        // 애니메이션
+        if (anim)
+        {
+            // 프로젝트에 맞춰 둘 중 하나/둘 다 사용
+            anim.SetBool("Dead", true);
+            anim.SetTrigger("Die");
+            anim.SetFloat("Speed", 0f);
+        }
+
+        // 리짓바디가 있다면 넘어지지 않게 고정
+        if (rb)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        // 일정 시간 후 삭제(옵션)
+        if (despawnAfter > 0f) Destroy(gameObject, despawnAfter);
+        // 계속 남길 거면 여기서 return; 만 해도 OK
     }
 
-    void ApplyEnemyType()
+    // ===================== Knockback 구현 =====================
+
+    IEnumerator KnockbackRoutine(Vector3 dir, float power, float time)
     {
-        // 타입별 스탯
-        switch (enemyType)
+        _inKnockback = true;
+        _stunUntil = Time.time + time;
+
+        bool agentWasEnabled = agent != null && agent.enabled;
+
+        // 에이전트 잠시 끄고 물리 이동(있는 경우)
+        if (agentWasEnabled) agent.enabled = false;
+
+        if (rb)
         {
-            case 1: chaseSpeed = 2.5f; attackDamage = 5; break;
-            case 2: chaseSpeed = 2.7f; attackDamage = 8; break;
-            case 3: chaseSpeed = 3.0f; attackDamage = 12; break;
-            case 4: chaseSpeed = 3.3f; attackDamage = 16; break;
-            case 5: chaseSpeed = 3.6f; attackDamage = 22; break;
+            bool prevKinematic = rb.isKinematic;
+            rb.isKinematic = false;
+            rb.drag = knockbackDrag;
+
+            rb.velocity = Vector3.zero;
+            rb.AddForce(dir * power, ForceMode.VelocityChange);
+
+            float t = 0f;
+            while (t < time)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            rb.velocity = Vector3.zero;
+            rb.isKinematic = prevKinematic;
+        }
+        else
+        {
+            // 리짓바디가 없으면 간단 이동
+            float t = 0f;
+            Vector3 start = transform.position;
+            Vector3 end = start + dir * power * 0.1f; // 파워 스케일 약간 줄임
+            while (t < time)
+            {
+                t += Time.deltaTime;
+                float a = Mathf.SmoothStep(0f, 1f, t / time);
+                transform.position = Vector3.Lerp(start, end, a);
+                yield return null;
+            }
         }
 
-        if (hp)
+        // NavMesh 복귀
+        if (agent)
         {
-            int idx = Mathf.Clamp(enemyType - 1, 0, hpByType.Length - 1);
-            hp.SetMaxHP(hpByType[idx], true); // HP도 타입에 맞춰 자동 세팅
+            agent.enabled = true;
+            EnsureOnNavMesh();
+            agent.isStopped = false;
         }
+
+        _inKnockback = false;
     }
 
-    Transform FindClosestByTag(string tagName)
+    // ===================== NavMesh 안전 유틸 =====================
+
+    bool AgentReady()
     {
-        var objs = GameObject.FindGameObjectsWithTag(tagName);
-        Transform best = null; float bestDist = Mathf.Infinity; Vector3 p = transform.position;
-        foreach (var go in objs)
-        {
-            if (go == gameObject) continue;
-            float d = Vector3.Distance(go.transform.position, p);
-            if (d < bestDist) { bestDist = d; best = go.transform; }
-        }
-        return best;
+        return agent != null && agent.enabled && agent.isOnNavMesh;
     }
 
+    void SafeStop()
+    {
+        if (AgentReady()) agent.isStopped = true;
+        if (agent != null) agent.velocity = Vector3.zero;
+    }
+
+    void SafeResume()
+    {
+        if (AgentReady()) agent.isStopped = false;
+    }
+
+    bool SafeSetDestination(Vector3 pos)
+    {
+        return AgentReady() && agent.SetDestination(pos);
+    }
+
+    float SafeRemainingDistance(float fallback = Mathf.Infinity)
+    {
+        return AgentReady() ? agent.remainingDistance : fallback;
+    }
+
+    void EnsureOnNavMesh()
+    {
+        if (agent == null) return;
+
+        if (!agent.enabled) agent.enabled = true;
+        if (agent.isOnNavMesh) return;
+
+        if (autoWarpToNavMesh &&
+            NavMesh.SamplePosition(transform.position, out var hit, navSampleRadius, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+    }
+
+#if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, visionRange);
-
+        Gizmos.DrawWireSphere(transform.position, sightRange);
         Gizmos.color = Color.red;
-        Vector3 c = attackPoint ? attackPoint.position : (transform.position + transform.forward * 1.0f);
-        Gizmos.DrawWireSphere(c, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
+#endif
 }

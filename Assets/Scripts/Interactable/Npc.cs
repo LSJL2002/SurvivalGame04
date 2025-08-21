@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Npc : MonoBehaviour
+public class Npc : MonoBehaviour, IInteractable
 {
-    // Start is called before the first frame update
-    void Start()
+    public string npcName;
+    public string[] dialogues; // ���� ���� ����
+
+    public string GetInteractPrompt()
     {
-        
+        string str = $"{npcName}";
+        return str;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnInteract()
     {
-        
+        DialogueManager.Instance.StartDialogue(npcName, dialogues);
     }
 }

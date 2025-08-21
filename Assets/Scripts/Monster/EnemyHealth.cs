@@ -10,12 +10,15 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public float destroyDelay = 3f;
 
     [Header("Hit Reaction")]
-    public float knockbackForce = 3f;
     public float flashDuration = 0.12f;
 
     [Header("Animation Params (optional)")]
     public string hurtTrigger = "Hurt";
     public string deadBool = "Dead";
+
+    [Header("Knockback")]                    // ✅ 추가: 넉백 세팅
+    public float knockbackPower = 6f;
+    public float knockbackTime = 0.20f;
 
     int currentHP;
     Rigidbody rb;
@@ -44,7 +47,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         currentHP = fill ? newMax : Mathf.Min(currentHP, newMax);
     }
 
-    // ⬇⬇ CS0535 해결: 인터페이스와 동일한 시그니처
+    // 무기에서 호출
     public void TakeDamage(int amount, Vector3 hitDir)
     {
         if (currentHP <= 0) return;
@@ -53,10 +56,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         if (rend) StartCoroutine(FlashRed());
 
-        if (rb)
+        // ✅ 넉백: 힘/지속시간을 같이 넘겨준다
+        if (enemyAI)
         {
-            Vector3 force = hitDir.normalized * knockbackForce + Vector3.up * 0.3f;
-            rb.AddForce(force, ForceMode.Impulse);
+            if (hitDir.sqrMagnitude > 0.0001f) hitDir.y = 0f;    // 수평만 유지 (선택)
+            enemyAI.ApplyKnockback(hitDir.normalized, knockbackPower, knockbackTime);
         }
 
         if (anim && !string.IsNullOrEmpty(hurtTrigger))

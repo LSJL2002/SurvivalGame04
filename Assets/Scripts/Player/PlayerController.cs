@@ -132,6 +132,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnJumpInput(InputAction.CallbackContext context)
     {
+        if (Time.timeScale == 0f)
+        {
+            return;
+        }
         if (context.phase == InputActionPhase.Started)
         {
             if (isClimbing)
