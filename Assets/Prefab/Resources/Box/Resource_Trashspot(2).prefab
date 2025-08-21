@@ -93,7 +93,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7776524098560462249}
   - component: {fileID: 1244336901909424613}
-  - component: {fileID: 9114506704339856045}
+  - component: {fileID: 6069822636963145672}
   m_Layer: 10
   m_Name: Resource_Trashspot(2)
   m_TagString: Untagged
@@ -138,7 +138,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.1603354, y: 0.75333, z: 0.54366064}
   m_Center: {x: -0.0012333989, y: -0.041933894, z: -0.008633375}
---- !u!114 &9114506704339856045
+--- !u!114 &6069822636963145672
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,11 +147,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8968218150787381316}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0d424aee9546684197224aa7cc56c7b, type: 3}
+  m_Script: {fileID: 11500000, guid: e160fc5ab723dc746923f204230802d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemToGive: {fileID: 11400000, guid: 5e725d9afb44d3446a0eac2bfbac0491, type: 2}
-  quantityPerHit: 1
-  capacity: 10
-  respawnTime: 10
-  allowedTools: 02000000
+  item: {fileID: 11400000, guid: f79098928ec42034c88dc9866cea954d, type: 2}
+  quantityPerInteract: 1
+  capacity: 5
+  respawnTime: 5
