@@ -115,7 +115,6 @@ public class UIInventory : MonoBehaviour
         ItemData data = CharacterManager.Instance.Player.itemData;
         if (data == null) return;
 
-        // 1. Try stack first in hotbar
         if (data.canStack)
         {
             foreach (var slot in hotbarSlots)
@@ -131,7 +130,6 @@ public class UIInventory : MonoBehaviour
             }
         }
 
-        // 2. Try empty slot in hotbar
         foreach (var slot in hotbarSlots)
         {
             if (slot.item == null)
@@ -145,7 +143,6 @@ public class UIInventory : MonoBehaviour
             }
         }
 
-        // 3. Try stack in inventory
         if (data.canStack)
         {
             ItemSlot stackSlot = GetStackSlot(data);
@@ -159,7 +156,6 @@ public class UIInventory : MonoBehaviour
             }
         }
 
-        // 4. Try empty slot in inventory
         ItemSlot emptySlot = GetEmptySlot();
         if (emptySlot != null)
         {
@@ -171,7 +167,6 @@ public class UIInventory : MonoBehaviour
             return;
         }
 
-        // 5. Inventory full, drop item
         ThrowItem(data, 1);
         CharacterManager.Instance.Player.itemData = null;
     }
