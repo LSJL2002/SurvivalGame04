@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7690895121862829200}
   - component: {fileID: 3630027274946613080}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Collider (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,7 +63,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2510550827855937924}
   - component: {fileID: 2510550827855937931}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Collider (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,7 +116,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2510550828168757887}
   - component: {fileID: 2510550828168757886}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Collider (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,7 +172,7 @@ GameObject:
   - component: {fileID: 5317202736437543317}
   - component: {fileID: 2000606788953848561}
   - component: {fileID: 768441234296968481}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Foodcar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -295,7 +295,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5291543664193033815}
   - component: {fileID: 201229912960839748}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Collider (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -67,8 +67,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baaba914c3d69c24faa4a168fca37292, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemData: {fileID: 0}
   ToolType: 2
-  attackRate: 5
+  attackRate: 2
   attackDistance: 5
   doesGatherResources: 1
   doesDealDamage: 1

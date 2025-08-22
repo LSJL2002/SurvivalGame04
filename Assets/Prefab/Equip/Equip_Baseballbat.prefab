@@ -67,12 +67,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baaba914c3d69c24faa4a168fca37292, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemData: {fileID: 0}
   ToolType: 0
   attackRate: 5
-  attackDistance: 5
+  attackDistance: 2
   doesGatherResources: 0
   doesDealDamage: 1
-  damage: 5
+  damage: 10
   UseStamina: 5
 --- !u!1 &5937659394937988245
 GameObject:
