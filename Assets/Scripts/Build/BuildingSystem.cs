@@ -29,6 +29,7 @@ public class BuildingSystem : MonoBehaviour
         foreach (var col in previewObject.GetComponentsInChildren<Collider>())
             col.enabled = false;
     }
+
     public void CancelPlacement()
     {
         if (previewObject != null) Destroy(previewObject);

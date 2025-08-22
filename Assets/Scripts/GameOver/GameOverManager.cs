@@ -23,6 +23,15 @@ public class GameOverManager : MonoBehaviour
         // Show UI
         gameOverUI.SetActive(true);
 
+        if (GameManager.Instance != null)
+        {
+            finalScore.text = "Days Survived: " + GameManager.Instance.daysSurvived.ToString();
+        }
+        else
+        {
+            finalScore.text = "Days Survived: 0";
+        }   
+        
         // Unlock cursor
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
