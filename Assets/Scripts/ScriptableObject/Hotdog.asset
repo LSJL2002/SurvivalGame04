@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4776a628c06e7ff4484605969ebaf280, type: 3}
+  m_Name: Hotdog
+  m_EditorClassIdentifier: 
+  inputs:
+  - item: {fileID: 11400000, guid: 1014647aa4664104e8a5fe27f4c24378, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 80f322cfe16b1104c8a2a71e448a18f3, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 5e725d9afb44d3446a0eac2bfbac0491, type: 2}
+    amount: 1
+  outputItem: {fileID: 11400000, guid: 6dc2e9b644505c5429bdd54afb674ecb, type: 2}
+  outputAmount: 1

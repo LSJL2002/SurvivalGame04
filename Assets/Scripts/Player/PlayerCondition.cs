@@ -2,18 +2,16 @@ using System;
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
 
-
-public interface IDamagable
-{
-    void TakePhysicalDamage(int damage);
-}
-public class PlayerCondition : MonoBehaviour, IDamagable
+public class PlayerCondition : MonoBehaviour, IDamageable
 {
     public UICondition uiCondition;
 
     Condition health { get { return uiCondition.health; } }
     Condition stamina { get { return uiCondition.stamina; } }
+    Condition thirst { get { return uiCondition.thirst; } }
+    Condition hunger { get { return uiCondition.hunger; } }
 
     public event Action onTakeDamage;
     private bool isInfiniteStamina = false;
@@ -21,11 +19,18 @@ public class PlayerCondition : MonoBehaviour, IDamagable
     private void Update()
     {
         stamina.Add(stamina.passiveValue * Time.deltaTime);
+        thirst.Subtract(thirst.passiveValue * Time.deltaTime);
+        hunger.Subtract(hunger.passiveValue * Time.deltaTime);
 
-        if (health.curValue < 0f)
+        if (hunger.curValue == 0 || thirst.curValue == 0)
         {
-            Die();
+            health.Subtract(5 * Time.deltaTime);
         }
+
+        if (health.curValue <= 0f)
+            {
+                Die();
+            }
     }
 
     public void Heal(float amount)
@@ -40,43 +45,21 @@ public class PlayerCondition : MonoBehaviour, IDamagable
 
     public void Eat(float amount)
     {
-        health.Add(amount);
+        hunger.Add(amount);
     }
 
-    // public void Boost(Func<float> getter, Action<float> setter, float multiplier, float duration, BoostType boostType)
-    // {
-    //     StartCoroutine(BoostStats(getter, setter, multiplier, duration, boostType));
-    // }
-
-    // private IEnumerator BoostStats(Func<float> getter, Action<float> setter, float multiplier, float duration, BoostType boostType)
-    // {
-    //     if (boostType == BoostType.Stamina)
-    //     {
-    //         isInfiniteStamina = true;
-    //     }
-    //     else
-    //     {
-    //         float originalValue = getter();  // Save original value here
-    //         setter(originalValue * multiplier);
-
-    //         yield return new WaitForSeconds(duration);
-
-    //         setter(originalValue);  // Restore original value here
-    //     }
-
-    //     if (boostType == BoostType.Stamina)
-    //     {
-    //         yield return new WaitForSeconds(duration); //Set the bool of isInfinite Stamina for a duration amount of time.
-    //         isInfiniteStamina = false;
-    //     }
-    // }
+    public void Drink(float amount)
+    {
+        thirst.Add(amount);
+    }
 
     public void Die()
     {
         Debug.Log("플레이어가 죽었다.");
+        FindObjectOfType<GameOverManager>().ShowGameOver();
     }
 
-    public void TakePhysicalDamage(int damage)
+    public void TakeDamage(int damage, Vector3 dir)
     {
         health.Subtract(damage);
         onTakeDamage?.Invoke();
