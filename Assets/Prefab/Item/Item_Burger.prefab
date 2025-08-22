@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5541109665734347748}
   - component: {fileID: 1159195101621966145}
   - component: {fileID: 4811254505958783660}
-  m_Layer: 22
+  m_Layer: 8
   m_Name: Item_Burger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 5205415151991006617}
   - component: {fileID: 3847867656964349871}
   - component: {fileID: 7375442996186637142}
-  m_Layer: 22
+  m_Layer: 8
   m_Name: Burger
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -37,8 +37,12 @@ public class InteractableResource : MonoBehaviour, IInteractable
     {
         if (isDepleted) return;
 
-        Vector3 spawnOffset = transform.forward + Vector3.up;
-        Vector3 spawnPosition = transform.position + spawnOffset;
+        Transform playerTransform = CharacterManager.Instance.Player.transform;
+
+        // Spawn items in front of the player
+        Vector3 spawnOffset = playerTransform.forward + Vector3.up;
+        Vector3 spawnPosition = playerTransform.position + spawnOffset;
+
         for (int i = 0; i < quantityPerInteract; i++)
         {
             if (capacity <= 0) break;
@@ -52,6 +56,7 @@ public class InteractableResource : MonoBehaviour, IInteractable
             StartRespawn();
         }
     }
+
 
     private void StartRespawn()
     {
